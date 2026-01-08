@@ -1,0 +1,30 @@
+{
+  "env": {
+    "z88dk": "/home/stu/speccy/code/git/z88dk"
+  },
+  "configurations": [
+    {
+      "name": "linux-gcc-x64",
+      "intelliSenseMode": "linux-gcc-x64",
+      "includePath": [
+        "${workspaceFolder}/**"
+      ],
+      "defines": [
+        "Z88DK",
+        "Z88DK_C",
+        "__INTELLISENSE__",
+        "__ZXNEXT",
+        "__Z80",
+        "__Z80__",
+        "__Z80N",
+        "__SDCC_IY",
+        "__Z88DK_NEWLIB",
+        "__Z88DK"
+      ],
+      "cStandard": "${default}",
+      "cppStandard": "${default}",
+      "compilerPath": "/usr/bin/gcc"
+    }
+  ],
+  "version": 4
+}
