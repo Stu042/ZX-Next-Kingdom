@@ -125,7 +125,9 @@ extern void	Border(uint8 colour) __z88dk_fastcall __preserves_regs(b,c,d,e,h,l,i
 // Attribute format: F_B_PPP_III
 extern void	ClsATTR(uint8 attrib) __z88dk_fastcall __preserves_regs(iyl,iyh);
 extern void	ClsULA(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
+
 extern void	ClsL2(uint8 col) __z88dk_fastcall;
+extern void	ClsFirst4(uint8 col) __z88dk_fastcall;
 extern void	ClsLast2(uint8 col) __z88dk_fastcall;
 
 extern void	SwapL2(void);
@@ -148,7 +150,12 @@ extern void BlitTransImage(uint8 x, uint8 y, uint16 transCol, uint8* imageSrc) _
 extern void Render1Bpp(uint8 x, uint8 y, uint16 col, uint8* oneBpp) __z88dk_callee __preserves_regs(iyl,iyh);
 
 
+/// Blit full width image by the bank, i.e. starting image at imageBank, for bankCount renders to top of display.
 extern void BlitLargeImage(uint8 imageBank, uint8 bankCount) __z88dk_callee;
+
+/// Same as BlitLargeImage() but renders to both on and off screen displays.
+extern void DoubleBlitLargeImage(uint8 imageBank, uint8 bankCount) __z88dk_callee;
+
 
 extern void PrintProp(uint8 x, uint8 y, uint8 col, char *text) __z88dk_callee;
 extern uint8 PropPixelLength(char *text) __z88dk_fastcall;

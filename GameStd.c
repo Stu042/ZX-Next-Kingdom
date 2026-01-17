@@ -2,11 +2,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "FrameWork.h"
+#include "GameData.h"
 #include "Kernel.h"
 #include "GameStd.h"
 
 
-GameRunState GrState;
 
 const uint8 StdTextColour = 20;
 const uint8 LoLightTextColour = 12;
@@ -18,9 +18,22 @@ const uint8 valColLarge = 224;
 const uint8 valColLow = 252;
 
 
-
-
 char buf[EDIT_VALUE_BUF_SIZE];
+
+
+
+#define stdTopTextPos(offset) ((uint8)(128 + offset))
+void PrintMainResources(void) {
+	PrintProp(80, stdTopTextPos(0), LoLightTextColour, "Total");
+	PrintProp(160, stdTopTextPos(0), LoLightTextColour, "Used");
+	PrintProp(230, stdTopTextPos(0), LoLightTextColour, "Year");
+	itoa(Year, buf, 10);
+	PrintProp(230, stdTopTextPos(8), LoLightTextColour, buf);
+
+	PrintValue(0, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
+	PrintValue(0, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
+	PrintValue(0, 80, stdTopTextPos(24), StdTextColour, "Grains", Grains);
+}
 
 
 /// Focus next editable item. Returns focus index.
@@ -76,7 +89,7 @@ bool KeyedInput(EditValue editFields[], int8 *focus, int8 editFieldCount) {
 
 
 /// Print a currently used value, coloured comparing with total.
-void PrintResource(uint8 x, uint8 y, int32 total, int32 value, char* str) {
+void PrintResourceValue(uint8 x, uint8 y, int32 total, int32 value, char* str) {
 	uint8 col = valCol;
 	if (value > total) {
 		col = valColLarge;
@@ -140,3 +153,48 @@ int EditValueCalcTotal(EditValue editFields[], int8 count) {
 	return total;
 }
 
+
+
+
+/// Returns random number starts at From and ends at To - 1 (inclusive)
+int32 rndRange(int32 from, int32 to) {
+	int32 diff = to - from;
+	if (diff <= 0) {
+		return from;
+	}
+	return (((int32)XorShift()) % diff) + from;
+}
+
+
+int32 rndPerc(int32 val, int32 perc) {
+	if (perc <= 0) {
+		return 0;
+	}
+	int32 result = rndRange(0, (val * perc + 1) / 100);
+	return result;
+}
+
+
+int32 max(int32 val, int32 max) {
+	if (val < max) {
+		val = max;
+	}
+	return val;
+}
+
+int32 min(int32 val, int32 min) {
+	if (val > min) {
+		val = min;
+	}
+	return val;
+}
+
+
+int32 clamp(int32 val, int32 min, int32 max) {
+	if (val > max) {
+		val = max;
+	} else if (val < min) {
+		val = min;
+	}
+	return val;
+}

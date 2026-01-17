@@ -2,16 +2,7 @@
 #define GamePop_h
 #include "FrameWork.h"
 #include "GameStd.h"
-
-
-
-
-extern int32 PopInFields;
-extern int32 PopOnWall;
-extern int32 PopDefending;
-
-extern int32 UsedPop;
-
+#include "GameData.h"
 
 extern void GamePopInit(void);
 extern void GamePopRun(void);

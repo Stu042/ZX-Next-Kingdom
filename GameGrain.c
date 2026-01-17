@@ -10,16 +10,12 @@
 //////////////////////////////
 /// Global vars
 
-int32 GrainAte;
-int32 GrainPlanted;
-
-int32 UsedGrain;
-
 
 //////////////////////////////
 // Internal vars
 
-static int8 grainIndex = 0;
+static int8 grainIndex;
+static int8 oldIndex;
 
 static char GrainAteStr[EDIT_VALUE_BUF_SIZE];
 static char GrainPlantedStr[EDIT_VALUE_BUF_SIZE];
@@ -35,8 +31,12 @@ static char* grainErrorStr;
 
 #define GRAIN_FIELDS_COUNT (2)
 static EditValue editFields[GRAIN_FIELDS_COUNT] = {
-	{72, 0, grainTopTextPos(28), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
-	{72, 0, grainTopTextPos(36), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
+	{80, 0, grainTopTextPos(32), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
+	{80, 0, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
+};
+
+static uint8 editFieldsPics[GRAIN_FIELDS_COUNT] = {
+	PlateOfFoodPic,PlantSeedPic
 };
 
 
@@ -50,7 +50,7 @@ static char* grainErrorTooManyStr = "Reduce the amount of grain.";
 static void input(void);
 static void render(void);
 static void calcUsed(void);
-
+static void updatePic(void);
 
 
 //////////////////////////////
@@ -60,6 +60,7 @@ static void calcUsed(void);
 
 void GameGrainInit(void) {
 	grainIndex = 0;
+	oldIndex = -1;
 	GrainAteStr[0] = 0;
 	GrainPlantedStr[0] = 0;
 	UsedGrainStr[0] = 0;
@@ -67,15 +68,14 @@ void GameGrainInit(void) {
 	GrainPlanted = 0;
 	UsedGrain = 0;
 	grainErrorStr = NULL;
-	GrState = GRS_GrainsRun;
+	SetState(State_GrainsRun);
 	ClsL2(0);
-	BlitLargeImage(PlateOfFood, PlateOfFoodSize);
 	SwapL2();
 	ClsL2(0);
-	BlitLargeImage(PlateOfFood, PlateOfFoodSize);
-	VBlankSwap();
-	BankGameData();
+	SwapL2();
+	updatePic();
 }
+
 
 
 void GameGrainRun(void) {
@@ -86,10 +86,10 @@ void GameGrainRun(void) {
 
 void GameGrainValidate(void) {
 	if (UsedGrain <= Grains) {
-		GrState = GRS_SimYearInit;
+		SetState(State_SimYearInit);
 	} else {	// show error
 		grainErrorStr = grainErrorTooManyStr;
-		GrState = GRS_GrainsRun;
+		SetState(State_GrainsRun);
 	}
 }
 
@@ -99,29 +99,38 @@ void GameGrainValidate(void) {
 // Internal functions
 
 static void input(void) {
+	int8 oldIndex = grainIndex;
 	bool finished = KeyedInput(editFields, &grainIndex, GRAIN_FIELDS_COUNT);
 	UsedGrain = EditValueCalcTotal(editFields, GRAIN_FIELDS_COUNT);
 	ltoa(UsedGrain, UsedGrainStr, 10);
 	if (finished) {
-		GrState = GRS_GrainValidate;
+		SetState(State_GrainValidate);
 	}
 }
 
 
 
 static void render(void) {
+	updatePic();
 	ClsLast2(0);
-	PrintProp(96, grainTopTextPos(0), LoLightTextColour, "Total");
-	PrintValue(0, 96, grainTopTextPos(8), StdTextColour, "Grains", Grains);
-	PrintProp(176, grainTopTextPos(0), LoLightTextColour, "Used");
-	PrintResource(176, grainTopTextPos(8), Grains, UsedGrain, UsedGrainStr);
-	
+	PrintMainResources();
+	PrintResourceValue(160, grainTopTextPos(24), Grains, UsedGrain, UsedGrainStr);
 	PrintEditValues(editFields, GRAIN_FIELDS_COUNT);
-
 	if(grainErrorStr) {
 		PrintProp(0, grainTopTextPos(48), StdTextColour, grainErrorStr);
 	}
 	VBlankSwap();
 }
 
+
+static void updatePic(void) {
+	if (oldIndex == grainIndex) {
+		return;
+	}
+	oldIndex = grainIndex;
+	if (editFieldsPics[grainIndex] != 0) {
+		DoubleBlitLargeImage(editFieldsPics[grainIndex], LargeImageSize);
+	}
+	BankGameData();
+}
 

@@ -1,11 +1,20 @@
+# Kingom
 
+### A resource management game for the ZX Spectrum Next.
+
+
+
+
+
+
+CFrame-Layer2-Kingdom Copyright (c) 2025 Stuart Geddes
 
 z88dk C Simple Example using overlays
 Copyright (c) Mike Dailly 2025
 
 
 This is a very simple framework for z88dk to get you going. 
-It has a main loop and a "kernal" that stays paged in at $E000 with an IRQ handler
+It has a main loop and a "kernel" that stays paged in at $E000 with an IRQ handler
 
 
 V1.1.0 - 03/11/2025

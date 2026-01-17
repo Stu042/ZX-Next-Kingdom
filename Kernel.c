@@ -3,14 +3,10 @@
 #include <z80.h>
 #include <im2.h>
 #include <intrinsic.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <input.h>
-#include <errno.h>
-
 #include "FrameWork.h"
 #include "data.h"
 #include "Kernel.h"

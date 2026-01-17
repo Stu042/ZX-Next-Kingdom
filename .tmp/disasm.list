@@ -1,351 +1,55 @@
-40D2.6 DATA_40D2:
-40D2.6 14           DEFB 14 ; ASCII: ?
-40D3.6 DATA_40D3:
-40D3.6 0C 14 FC...  DEFB 0C 14 FC E0 FC CD E1 8F ; ASCII: ????????
+4082.8 SUB_4082:
+4082.8 45           LD B,L
+4083.8 E5           PUSH HL
+4084.8 21 8C 00     LD HL,008Ch
+4087.8 E5           PUSH HL
+4088.8 11 BE 14     LD DE,14BEh
+408B.8 D5           PUSH DE
 
-420D.6 SUB_420D:
+; Note: The address 0E3FDh is in a different bank.
+408C.8 CD FD E3     CALL 0E3FDh
 
-; Note: The address 8FE1h is in a different bank.
-420D.6 CD E1 8F     CALL 8FE1h
+408F.8 21 9E 46     LD HL,469Eh.8
+4092.8 E5           PUSH HL
+4093.8 21 44 00     LD HL,0044h
+4096.8 E5           PUSH HL
+4097.8 11 0A 14     LD DE,140Ah
+409A.8 D5           PUSH DE
 
-4210.6 DD 7E 06     LD A,(IX+6)
-4213.6 DD 96 0A     SUB (IX+10)
-4216.6 DD 7E 07     LD A,(IX+7)
-4219.6 DD 9E 0B     SBC A,(IX+11)
-421C.6 DD 7E 08     LD A,(IX+8)
-421F.6 DD 9E 0C     SBC A,(IX+12)
-4222.6 DD 7E 09     LD A,(IX+9)
-4225.6 DD 9E 0D     SBC A,(IX+13)
-4228.6 E2 2D 42     JP PO,.L1
+; Note: The address 0E3FDh is in a different bank.
+409B.8 CD FD E3     CALL 0E3FDh
 
-422B.6 EE 80        XOR 80h
+409E.8 21 49 49     LD HL,4949h.8
+40A1.8 E5           PUSH HL
+40A2.8 21 8C 00     LD HL,008Ch
+40A5.8 E5           PUSH HL
+40A6.8 11 0A 14     LD DE,140Ah
+40A9.8 D5           PUSH DE
 
-422D.6 .L1:
-422D.6 F2 34 42     JP P,.L2
-
-4230.6 3E E0        LD A,0E0h
-4232.6 18 26        JR .L5
-
-4234.6 .L2:
-4234.6 DD 7E 0A     LD A,(IX+10)
-4237.6 DD 96 06     SUB (IX+6)
-423A.6 DD 7E 0B     LD A,(IX+11)
-423D.6 DD 9E 07     SBC A,(IX+7)
-4240.6 DD 7E 0C     LD A,(IX+12)
-4243.6 DD 9E 08     SBC A,(IX+8)
-4246.6 DD 7E 0D     LD A,(IX+13)
-4249.6 DD 9E 09     SBC A,(IX+9)
-424C.6 E2 51 42     JP PO,.L3
-
-424F.6 EE 80        XOR 80h
-
-4251.6 .L3:
-4251.6 F2 58 42     JP P,.L4
-
-4254.6 3E FC        LD A,0FCh
-4256.6 18 02        JR .L5
-
-4258.6 .L4:
-4258.6 3E 14        LD A,14h
-
-425A.6 .L5:
-425A.6 DD 6E 0E     LD L,(IX+14)
-425D.6 DD 66 0F     LD H,(IX+15)
-4260.6 E5           PUSH HL
-4261.6 F5           PUSH AF
-4262.6 33           INC SP
-4263.6 DD 66 05     LD H,(IX+5)
-4266.6 DD 6E 04     LD L,(IX+4)
-4269.6 E5           PUSH HL
-
-; Note: The address 0E535h is in a different bank.
-426A.6 CD 35 E5     CALL 0E535h
-
-426D.6 DD E1        POP IX
-426F.6 C9           RET
-
-42BD.6 SUB_42BD:
-
-; Note: The address 8FE1h is in a different bank.
-42BD.6 CD E1 8F     CALL 8FE1h
-
-42C0.6 DD 46 07     LD B,(IX+7)
-42C3.6 C5           PUSH BC
-42C4.6 DD 6E 09     LD L,(IX+9)
-42C7.6 DD 66 0A     LD H,(IX+10)
-42CA.6 E5           PUSH HL
-42CB.6 C5           PUSH BC
-42CC.6 33           INC SP
-42CD.6 DD 66 06     LD H,(IX+6)
-42D0.6 DD 6E 04     LD L,(IX+4)
-42D3.6 E5           PUSH HL
-
-; Note: The address 0E535h is in a different bank.
-42D4.6 CD 35 E5     CALL 0E535h
-
-42D7.6 C1           POP BC
-42D8.6 11 24 96     LD DE,9624h
-42DB.6 C5           PUSH BC
-42DC.6 D5           PUSH DE
-42DD.6 21 0A 00     LD HL,000Ah
-42E0.6 E5           PUSH HL
-42E1.6 D5           PUSH DE
-42E2.6 21 0B 00     LD HL,000Bh
-
-; Note: The address 8FA9h is in a different bank.
-42E5.6 CD A9 8F     CALL 8FA9h
-
-; Note: The address 91E6h is in a different bank.
-42E8.6 CD E6 91     CALL 91E6h
-
-42EB.6 D1           POP DE
-42EC.6 C1           POP BC
-42ED.6 D5           PUSH DE
-42EE.6 C5           PUSH BC
-42EF.6 33           INC SP
-42F0.6 DD 66 06     LD H,(IX+6)
-42F3.6 DD 6E 05     LD L,(IX+5)
-42F6.6 E5           PUSH HL
-
-; Note: The address 0E535h is in a different bank.
-42F7.6 CD 35 E5     CALL 0E535h
-
-42FA.6 DD E1        POP IX
-42FC.6 C9           RET
-
-42FD.6 SUB_42FD:
-
-; Note: The address 8FE1h is in a different bank.
-42FD.6 CD E1 8F     CALL 8FE1h
-
-4300.6 F5           PUSH AF
-4301.6 3E 14        LD A,14h
-4303.6 F5           PUSH AF
-4304.6 33           INC SP
-4305.6 DD 6E 04     LD L,(IX+4)
-4308.6 DD 66 05     LD H,(IX+5)
-430B.6 4D           LD C,L
-430C.6 44           LD B,H
-430D.6 23           INC HL
-430E.6 23           INC HL
-430F.6 23           INC HL
-4310.6 CB 46        BIT 0,(HL)
-4312.6 28 04        JR Z,.L1
-
-4314.6 DD 36 FD FC  LD (IX-3),0FCh
-
-4318.6 .L1:
-4318.6 21 04 00     LD HL,0004h
-431B.6 09           ADD HL,BC
-431C.6 5E           LD E,(HL)
-431D.6 23           INC HL
-431E.6 56           LD D,(HL)
-431F.6 21 02 00     LD HL,0002h
-4322.6 09           ADD HL,BC
-4323.6 DD 75 FE     LD (IX-2),L
-4326.6 DD 74 FF     LD (IX-1),H
-4329.6 7E           LD A,(HL)
-432A.6 69           LD L,C
-432B.6 60           LD H,B
-432C.6 23           INC HL
-432D.6 66           LD H,(HL)
-432E.6 C5           PUSH BC
-432F.6 D5           PUSH DE
-4330.6 16 14        LD D,14h
-4332.6 D5           PUSH DE
-4333.6 33           INC SP
-4334.6 6C           LD L,H
-4335.6 67           LD H,A
-4336.6 E5           PUSH HL
-
-; Note: The address 0E535h is in a different bank.
-4337.6 CD 35 E5     CALL 0E535h
-
-433A.6 C1           POP BC
-433B.6 21 06 00     LD HL,0006h
-433E.6 09           ADD HL,BC
-433F.6 5E           LD E,(HL)
-4340.6 23           INC HL
-4341.6 56           LD D,(HL)
-4342.6 1A           LD A,(DE)
-4343.6 DD 6E FE     LD L,(IX-2)
-4346.6 DD 66 FF     LD H,(IX-1)
-4349.6 F5           PUSH AF
-434A.6 7E           LD A,(HL)
-434B.6 DD 77 FF     LD (IX-1),A
-434E.6 0A           LD A,(BC)
-434F.6 47           LD B,A
-4350.6 F1           POP AF
-4351.6 B7           OR A
-4352.6 20 12        JR NZ,.L2
-
-4354.6 21 78 43     LD HL,4378h.6
-4357.6 E5           PUSH HL
-4358.6 DD 66 FD     LD H,(IX-3)
-435B.6 DD 6E FF     LD L,(IX-1)
-435E.6 E5           PUSH HL
-435F.6 C5           PUSH BC
-4360.6 33           INC SP
-
-; Note: The address 0E535h is in a different bank.
-4361.6 CD 35 E5     CALL 0E535h
-
-4364.6 18 0D        JR .L3
-
-4366.6 .L2:
-4366.6 D5           PUSH DE
-4367.6 DD 66 FD     LD H,(IX-3)
-436A.6 DD 6E FF     LD L,(IX-1)
-436D.6 E5           PUSH HL
-436E.6 C5           PUSH BC
-436F.6 33           INC SP
-
-; Note: The address 0E535h is in a different bank.
-4370.6 CD 35 E5     CALL 0E535h
-
-4373.6 .L3:
-4373.6 DD F9        LD SP,IX
-4375.6 DD E1        POP IX
-4377.6 C9           RET
-
-437A.6 SUB_437A:
-
-; Note: The address 8FE1h is in a different bank.
-437A.6 CD E1 8F     CALL 8FE1h
-
-437D.6 DD 4E 04     LD C,(IX+4)
-4380.6 DD 46 05     LD B,(IX+5)
-4383.6 1E 00        LD E,00h
-
-4385.6 .LOOP:
-4385.6 7B           LD A,E
-4386.6 DD 96 06     SUB (IX+6)
-4389.6 30 10        JR NC,.L1
-
-438B.6 C5           PUSH BC
-438C.6 D5           PUSH DE
-438D.6 C5           PUSH BC
-438E.6 CD FD 42     CALL SUB_42FD
-
-4391.6 F1           POP AF
-4392.6 D1           POP DE
-4393.6 C1           POP BC
-4394.6 3E 0C        LD A,0Ch
-4396.6 ED 33        ADD BC,A
-4398.6 1C           INC E
-4399.6 18 EA        JR .LOOP
-
-439B.6 .L1:
-439B.6 DD E1        POP IX
-439D.6 C9           RET
-
-46C9.6 2E 00        LD L,00h
-
-; Note: The address 0E2FAh is in a different bank.
-46CB.6 CD FA E2     CALL 0E2FAh
-
-46CE.6 3A D3 40     LD A,(DATA_40D3)
-46D1.6 21 5E 47     LD HL,475Eh.6
-46D4.6 E5           PUSH HL
-46D5.6 57           LD D,A
-46D6.6 1E 80        LD E,80h
-46D8.6 D5           PUSH DE
-46D9.6 3E 60        LD A,60h
-46DB.6 F5           PUSH AF
-46DC.6 33           INC SP
-
-; Note: The address 0E535h is in a different bank.
-46DD.6 CD 35 E5     CALL 0E535h
-
-46E0.6 3A D2 40     LD A,(DATA_40D2)
-46E3.6 06 00        LD B,00h
-46E5.6 2A 15 96     LD HL,(9615h)
-46E8.6 E5           PUSH HL
-46E9.6 2A 13 96     LD HL,(9613h)
-46EC.6 E5           PUSH HL
-46ED.6 21 64 47     LD HL,4764h.6
-46F0.6 E5           PUSH HL
-46F1.6 4F           LD C,A
-46F2.6 C5           PUSH BC
-46F3.6 11 60 88     LD DE,8860h
-46F6.6 D5           PUSH DE
-46F7.6 AF           XOR A
-46F8.6 F5           PUSH AF
-46F9.6 33           INC SP
-46FA.6 CD BD 42     CALL SUB_42BD
-
-46FD.6 21 0B 00     LD HL,000Bh
-4700.6 39           ADD HL,SP
-4701.6 F9           LD SP,HL
-4702.6 3A D3 40     LD A,(DATA_40D3)
-4705.6 21 6B 47     LD HL,476Bh.6
-4708.6 E5           PUSH HL
-4709.6 57           LD D,A
-470A.6 1E 80        LD E,80h
-470C.6 D5           PUSH DE
-470D.6 3E B0        LD A,0B0h
-470F.6 F5           PUSH AF
-4710.6 33           INC SP
-
-; Note: The address 0E535h is in a different bank.
-4711.6 CD 35 E5     CALL 0E535h
-
-4714.6 21 B3 96     LD HL,96B3h
-4717.6 E5           PUSH HL
-4718.6 2A 91 96     LD HL,(9691h)
-471B.6 E5           PUSH HL
-471C.6 2A 8F 96     LD HL,(968Fh)
-471F.6 E5           PUSH HL
-4720.6 2A 15 96     LD HL,(9615h)
-4723.6 E5           PUSH HL
-4724.6 2A 13 96     LD HL,(9613h)
-4727.6 E5           PUSH HL
-4728.6 11 B0 88     LD DE,88B0h
-472B.6 D5           PUSH DE
-472C.6 CD 0D 42     CALL SUB_420D
-
-472F.6 21 0C 00     LD HL,000Ch
-4732.6 39           ADD HL,SP
-4733.6 F9           LD SP,HL
-4734.6 3E 02        LD A,02h
-4736.6 F5           PUSH AF
-4737.6 33           INC SP
-4738.6 21 64 95     LD HL,9564h
-473B.6 E5           PUSH HL
-473C.6 CD 7A 43     CALL SUB_437A
-
-473F.6 F1           POP AF
-4740.6 33           INC SP
-4741.6 21 C4 96     LD HL,96C4h
-4744.6 7E           LD A,(HL)
-4745.6 2B           DEC HL
-4746.6 B6           OR (HL)
+; Note: The address 0E3FDh is in a different bank.
+40AA.8 CD FD E3     CALL 0E3FDh
 
 ; Note: The address 0E087h is in a different bank.
-4747.6 CA 87 E0     JP Z,0E087h
+40AD.8 CD 87 E0     CALL 0E087h
 
-474A.6 3A D2 40     LD A,(DATA_40D2)
-474D.6 2A C3 96     LD HL,(96C3h)
-4750.6 E5           PUSH HL
-4751.6 57           LD D,A
-4752.6 1E B0        LD E,0B0h
-4754.6 D5           PUSH DE
-4755.6 AF           XOR A
-4756.6 F5           PUSH AF
-4757.6 33           INC SP
+40B0.8 21 DB 95     LD HL,95DBh
+40B3.8 36 02        LD (HL),02h
+40B5.8 C9           RET
 
-; Note: The address 0E535h is in a different bank.
-4758.6 CD 35 E5     CALL 0E535h
+4184.8 CD 82 40     CALL SUB_4082
 
-; Note: The address 0E087h is in a different bank.
-475B.6 C3 87 E0     JP 0E087h
+4187.8 21 DB 95     LD HL,95DBh
+418A.8 36 06        LD (HL),06h
+418C.8 C9           RET
 
 8192.4 34           INC (HL)
 8193.4 34           INC (HL)
+8194.4 21 E6 96     LD HL,_updatePic_oldIndex_10000_527
+8197.4 36 FF        LD (HL),0FFh
 
-81A2.4 ED 56        IM 1
-81A4.4 FB           EI
-81A5.4 C9           RET
+81A7.4 ED 56        IM 1
+81A9.4 FB           EI
+81AA.4 C9           RET
 
 BFFF.5 __register_sp:
-BFFF.5 FF 00 00...  DEFB FF 00 00 00 00 00 00 00 ; ASCII: ????????
+BFFF.5 FF FF FF...  DEFB FF FF FF FF FF FF FF FF ; ASCII: ????????

@@ -3,18 +3,11 @@
 #include "GamePop.h"
 #include "GameStd.h"
 #include "GameData.h"
-
+#include "pics/Pics.h"
 
 
 //////////////////////////////
 /// Global vars
-
-
-int32 PopInFields;
-int32 PopOnWall;
-int32 PopDefending;
-
-int32 UsedPop;
 
 
 
@@ -35,15 +28,20 @@ static char UsedPopStr[EDIT_VALUE_BUF_SIZE];
 
 #define POP_FIELDS_COUNT (3)
 static EditValue editFields[POP_FIELDS_COUNT] = {
-	{96, 0, popTopTextPos(24), true,"Working Fields", PopInFieldsStr, &PopInFields, &Population},
-	{96, 0, popTopTextPos(32), false,"Working Wall",PopOnWallStr, &PopOnWall, &Population},
-	{96, 0, popTopTextPos(40), false,"Defending",PopDefendingStr, &PopDefending, &Population},
+	{80, 0, popTopTextPos(32), true,"Working Fields", PopInFieldsStr, &PopInFields, &Population},
+	{80, 0, popTopTextPos(40), false,"Working Wall",PopOnWallStr, &PopOnWall, &Population},
+	{80, 0, popTopTextPos(48), false,"Defending",PopDefendingStr, &PopDefending, &Population},
 };
 
-static int8 fieldIndex;
+static uint8 editFieldsPics[POP_FIELDS_COUNT] = {
+	FieldsPic,DykePic,DykePic
+};
+
+static int8 popIndex;
+static int8 oldIndex;
 
 static char* popErrorStr;
-static char* popErrorTooManyStr =   "Reduce the amount of Pop.";
+static char* popErrorTooManyStr = "Reduce the amount of Pop.";
 
 
 
@@ -53,7 +51,7 @@ static char* popErrorTooManyStr =   "Reduce the amount of Pop.";
 
 static void input(void);
 static void render(void);
-
+static void updatePic(void);
 
 
 //////////////////////////////
@@ -61,7 +59,8 @@ static void render(void);
 
 
 void GamePopInit(void) {
-	fieldIndex = 0;
+	popIndex = 0;
+	oldIndex = -1;
 	PopInFieldsStr[0] = 0;
 	PopOnWallStr[0] = 0;
 	PopDefendingStr[0] = 0;
@@ -71,7 +70,11 @@ void GamePopInit(void) {
 	UsedPop = 0;
 	UsedPopStr[0] = 0;
 	popErrorStr = NULL;
-	GrState = GRS_PopRun;
+	SetState(State_PopRun);
+	ClsL2(0);
+	SwapL2();
+	ClsL2(0);
+	SwapL2();
 }
 
 
@@ -83,10 +86,10 @@ void GamePopRun(void) {
 
 void GamePopValidate(void) {
 	if (UsedPop <= Population) {
-		GrState = GRS_GrainsInit;
+		SetState(State_GrainsInit);
 	} else {	// show error
 		popErrorStr = popErrorTooManyStr;
-		GrState = GRS_PopRun;
+		SetState(State_PopRun);
 	}
 }
 
@@ -97,32 +100,37 @@ void GamePopValidate(void) {
 // Internal functions
 
 static void input(void) {
-	bool finished = KeyedInput(editFields, &fieldIndex, POP_FIELDS_COUNT);
+	bool finished = KeyedInput(editFields, &popIndex, POP_FIELDS_COUNT);
 	UsedPop = EditValueCalcTotal(editFields, POP_FIELDS_COUNT);
 	ltoa(UsedPop, UsedPopStr, 10);
 	if (finished) {
-		GrState = GRS_PopValidate;
+		SetState(State_PopValidate);
 	}
 }
 
 
 
 static void render(void) {
-	ClsL2(0);
-	PrintProp(96, popTopTextPos(0), LoLightTextColour, "Total");
-
-	PrintValue(0, 96, popTopTextPos(8), StdTextColour, "Population", Population);
-	PrintValue(0, 96, popTopTextPos(16), StdTextColour, "Land", LandSize);
-	PrintProp(176, popTopTextPos(0), LoLightTextColour, "Used");
-	PrintResource(176, popTopTextPos(8), Population, UsedPop, UsedPopStr);
-	
+	updatePic();
+	ClsLast2(0);
+	PrintMainResources();
+	PrintResourceValue(160, popTopTextPos(8), Population, UsedPop, UsedPopStr);
 	PrintEditValues(editFields, POP_FIELDS_COUNT);
-
 	if(popErrorStr) {
-		PrintProp(0, popTopTextPos(48), StdTextColour, popErrorStr);
+		PrintProp(0, popTopTextPos(56), StdTextColour, popErrorStr);
 	}
 	VBlankSwap();
 }
 
 
- 
+static void updatePic(void) {
+	if (oldIndex == popIndex) {
+		return;
+	}
+	oldIndex = popIndex;
+	if (editFieldsPics[popIndex] != 0) {
+		DoubleBlitLargeImage(editFieldsPics[popIndex], LargeImageSize);
+	}
+	BankGameData();
+}
+

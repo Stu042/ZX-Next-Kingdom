@@ -8,15 +8,11 @@
 #pragma output REGISTER_SP = 0xbfff
 
 #include <arch/zxn.h> // ZX Spectrum Next architecture specfic functions
-#include <errno.h>
 #include <im2.h>
 #include <input.h>
 #include <intrinsic.h>
 #include <stdbool.h>
 #include <stdint.h> // standard names for ints with no ambiguity
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <z80.h>
 
 #include "FrameWork.h"
@@ -24,7 +20,9 @@
 #include "GamePlay.h"
 #include "Kernel.h"
 #include "data.h"
-
+#include "GamePop.h"
+#include "GameGrain.h"
+#include "GameSimYear.h"
 
 
 
@@ -32,53 +30,71 @@
 //  Handle the main loop and state changes
 // ****************************************************************************************
 void MainLoop(void) {
-	WipeSprites();
 	SetState(State_InitFrontEnd);
-	CopySpriteData();
 	while (1) {
 		switch (GameState) {		// Do game states
-			case State_InitFrontEnd: {
+			case State_InitFrontEnd:
 				BankFrontEnd();
 				FE_Init();
 				break;
-			}
-			case State_FrontEnd: {
+			case State_FrontEnd:
 				FE_Run();
 				break;
-			}
-			case State_ContinueGame: {
+			case State_ContinueGame:
 				FE_ContinueGame();
 				break;
-			}
-			case State_NewGame: {
+			case State_NewGame:
 				FE_NewGame();
 				break;
-			}
-			case State_LoadGame: {
+			case State_LoadGame:
 				FE_LoadGame();
 				break;
-			}
 
-			case State_QuitFrontEnd: {
+			case State_QuitFrontEnd:
 				FE_Quit();
 				break;
-			}
-			case State_InitGame: {
+			case State_InitGame:
 				BankGamePlay();
 				GP_Init();
 				break;
-			}
-			case State_Game: {
-				GP_Run();
+
+			case State_PopInit:
+				GamePopInit();
 				break;
-			}
-			case State_QuitGame: {
+			case State_PopRun:
+				GamePopRun();
+				break;
+			case State_PopValidate:
+				GamePopValidate();
+				break;
+			case State_GrainsInit:
+				GameGrainInit();
+				break;
+			case State_GrainsRun:
+				GameGrainRun();
+				break;
+			case State_GrainValidate:
+				GameGrainValidate();
+				break;
+			case State_SimYearInit:
+				GameSimYearInit();
+				break;
+			case State_SimYearRun:
+				GameSimYear();
+				break;
+			case State_SimYearRender:
+				GameSimYearRender();
+				break;
+			case State_SimYearPause:
+				GameSimYearPause();
+				break;
+
+			case State_QuitGame:
 				GP_Quit();
 				break;
-			}
-			default: {
+			default:
 				SetState(State_InitFrontEnd);
-			}
+				break;
 		}
 	}
 }
@@ -115,6 +131,7 @@ int main(void) {
 	//DMACopy(0x4000, 0x4800, 0x800);
 	//UploadSprites(0, 0x04, (uint16 *)0x5678);
 
+	InitDebounce();
 	MainLoop();
 
 	return 0;

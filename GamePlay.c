@@ -16,6 +16,7 @@
 #include <input.h>
 #include <errno.h>
 
+#include "FrameWork.h"
 #include "Kernel.h"
 #include "FrontEnd.h"
 #include "data.h"
@@ -30,8 +31,6 @@
 
 #pragma output CRT_ORG_CODE = 0x4000
 
-#undef DEBUG
-
 
 //////////////////////////////
 /// Global functions
@@ -42,56 +41,13 @@
 //  ***************************************************************************************
 //  Init the Game
 //  ***************************************************************************************
-void GP_Init( void ) {
-	Border(INK_BLACK);
+void GP_Init(void) {
+	Border(INK_BLUE);
 	ClsL2(0);
 	VBlankSwap();
-	GrState = GRS_PopInit;
-	InitDebounce();
-	SetState(State_Game);
+	SetState(State_PopInit);
 }
 
-
-//  ***************************************************************************************
-//  Process the game
-//  ***************************************************************************************
-void GP_Run(void) {
-	switch (GrState) {
-		case GRS_PopInit:
-			GamePopInit();
-			break;
-		case GRS_PopRun:
-			GamePopRun();
-			break;
-		case GRS_PopValidate:
-			GamePopValidate();
-			break;
-		case GRS_GrainsInit:
-			GameGrainInit();
-			break;
-		case GRS_GrainsRun:
-			GameGrainRun();
-			break;
-		case GRS_GrainValidate:
-			GameGrainValidate();
-			break;
-		case GRS_SimYearInit:
-			GameSimYearInit();
-			break;
-		case GRS_SimYearRun:
-			GameSimYear();
-			break;
-		case GRS_SimYearRender:
-			GameSimYearRender();
-			break;
-		case GRS_SimYearPause:
-			GameSimYearPause();
-			break;
-			
-		default:
-			break;
-	}
-}
 
 
 //  ***************************************************************************************

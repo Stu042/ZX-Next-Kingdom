@@ -8,7 +8,7 @@
 #include <intrinsic.h>
 #include <stdint.h>
 
-#define DEBUG (1)
+//#define DEBUG (1)
 
 
 #define BREAK		{ intrinsic_emit(0xFD); intrinsic_emit(0x00); }
@@ -48,7 +48,7 @@ typedef	uint64_t	uint64;
 typedef	int64_t		int64;
 
 
-#define	SetState(state)	GameState=state
+#define	SetState(state)	(GameState=(state))
 
 typedef enum eGameStateType {
 	State_InitFrontEnd = 1,		// init the front end
@@ -60,7 +60,19 @@ typedef enum eGameStateType {
 	State_QuitFrontEnd,		// quit the front end
 
 	State_InitGame,			// init the game
-	State_Game,			// process the game
+	//State_Game,			// process the game
+
+	State_PopInit,
+	State_PopRun,
+	State_PopValidate,
+	State_GrainsInit,
+	State_GrainsRun,
+	State_GrainValidate,
+	State_SimYearInit,
+	State_SimYearRun,
+	State_SimYearRender,
+	State_SimYearPause,
+
 	State_QuitGame,			// quit the game
 } eGameState;
 

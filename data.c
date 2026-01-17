@@ -21,7 +21,6 @@
 
 const char GameName[] = "Kingdom";
 
-eGameState GameState;
 
 
 

@@ -209,6 +209,19 @@ _ClsLast2:
 			LD 	B,2
 			jr	ClsL2@loop
 
+;===========================================================================
+; ClsFirst4()
+;
+;===========================================================================
+	PUBLIC _ClsFirst4, ClsFirst4
+ClsFirst4:
+			LD 	E, L			; Get the colour from HL
+_ClsFirst4:
+			LD	A,(screen_banks+1)	; Get the offscreen screen bank
+			ld	d,a
+			LD 	B,4
+			jr	ClsL2@loop
+
 
 ; ******************************************************************************
 ; Function: DMACopper
@@ -392,6 +405,24 @@ BlitLargeImage:
 			inc	c
 			djnz	@nextBank
 			ret
+
+;; GetPixelAddressMemBankOnscreen
+	PUBLIC _DoubleBlitLargeImage, DoubleBlitLargeImage
+_DoubleBlitLargeImage:
+			pop	hl		; return addr
+			pop	bc		; B = bank count, C = start bank
+			push	hl		; restore return addr
+DoubleBlitLargeImage:
+			push	bc		; B = image bank count, C = start image bank
+			ld	bc,0
+			call	GetPixelAddressMemBank
+			pop	bc
+			push	bc
+			call	BlitLargeImage@nextBank
+			ld	bc,0
+			call	GetPixelAddressMemBankOnscreen
+			pop	bc
+			jr	BlitLargeImage@nextBank
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -580,6 +611,7 @@ GetPixelAddress:
 ; ******************************************************************************
 GetPixelAddressMemBank:
 			LD 	A,(screen_banks+1)
+GetPixelAddressMemBankAeqBankbase:
 			LD 	H,A			; H: Offscreen screen bank
 			LD	A,B			; 0-31 per bank (8k)
 			AND	%11100000		; 3 bits for the 8 banks we can use
@@ -587,6 +619,9 @@ GetPixelAddressMemBank:
 			RRCA
 			ADD	A, H			; Add the bank in
 			ret	
+GetPixelAddressMemBankOnscreen:
+			LD 	A,(screen_banks)
+			jr	GetPixelAddressMemBankAeqBankbase
 
 
 ; ******************************************************************************

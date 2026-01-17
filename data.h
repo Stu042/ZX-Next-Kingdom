@@ -3,5 +3,4 @@
 
 
 extern const char GameName[];
-extern eGameState GameState;
 

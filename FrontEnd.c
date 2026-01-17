@@ -18,15 +18,14 @@
 #include "Kernel.h"
 #include "FrontEnd.h"
 #include "data.h"
+#include "GameStd.h"
 #include "GameData.h"
 
 #pragma output CRT_ORG_CODE = 0x4000
 
 
 // internal protos
-void PrintGameName(void);
-void ActionInput(void);
-void SetDefaultGameValues(void);
+static void actionInput(void);
 
 
 //  ***************************************************************************************
@@ -35,7 +34,6 @@ void SetDefaultGameValues(void);
 //  ***************************************************************************************
 void FE_Init(void) {
 	Border(INK_BLACK);
-	InitDebounce();
 
 	ClsL2(0);
 	BlitTransImage(68,0, 227, kingdom);
@@ -69,7 +67,7 @@ void FE_Init(void) {
 //  State_FrontEnd
 //  ***************************************************************************************
 void FE_Run(void) {    
-	ActionInput();
+	actionInput();
 	BlitTransImage(68,0, 227, kingdom);
 	
 	Render1Bpp(190, 20, 68, Abstract_Tree_1bpp);
@@ -84,26 +82,6 @@ void FE_Run(void) {
 	PrintPropCentre(180, 4, "Made By Stu");
 
 	VBlankSwap();
-}
-
-
-
-
-// Action user input
-void ActionInput(void) {
-	DebounceReadKeyboard();
-	if(DebounceKeys[VK_1] != 0) {
-		SetState(State_ContinueGame);
-		return;
-	}
-	if(DebounceKeys[VK_2] != 0) {
-		SetState(State_NewGame);
-		return;
-	}
-	if(DebounceKeys[VK_3] != 0) {
-		SetState(State_LoadGame);
-		return;
-	}
 }
 
 
@@ -123,16 +101,14 @@ void FE_ContinueGame(void) {	// TODO
 //  ***************************************************************************************
 void FE_NewGame(void) {
 	BankGameData();
-	SetDefaultGameValues();
-	SetState(State_QuitFrontEnd);
-}
-
-
-void SetDefaultGameValues(void) {
+	Year = 0;
 	Grains = 100;
 	Population = 20;
 	LandSize = 10;
-	DykeState = 1000;
+	DykeStateFrac = 1000;
+	BanditCount = 10;
+	BanditHealthFrac = 50;
+	SetState(State_QuitFrontEnd);
 }
 
 
@@ -153,4 +129,27 @@ void FE_LoadGame(void) {	// TODO
 void FE_Quit(void) {    
 	SetState(State_InitGame);
 } 
+
+
+
+//  ***************************************************************************************
+//  Internal functions
+
+
+// Action user input
+static void actionInput(void) {
+	DebounceReadKeyboard();
+	if(DebounceKeys[VK_1] != 0) {
+		SetState(State_ContinueGame);
+		return;
+	}
+	if(DebounceKeys[VK_2] != 0) {
+		SetState(State_NewGame);
+		return;
+	}
+	if(DebounceKeys[VK_3] != 0) {
+		SetState(State_LoadGame);
+		return;
+	}
+}
 

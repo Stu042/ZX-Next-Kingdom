@@ -13,22 +13,32 @@
                 "reveal": "always"
 	},
       "problemMatcher": [
-        {
-          "owner": "zcc",
-	  "fileLocation": [
-                        "relative"
-                    ],
-          "pattern": [
-            {
-              "regexp": "^(.*?):(\\d+):.*(warning|error).*:\\s+(.*)$",
-              "file": 1,
-              "line": 2,
-              "severity": 3,
-              "message": 4
-            }
-          ]
-        }
+        //{
+        //  "owner": "zcc",
+	//   "fileLocation": [
+        //                 "relative"
+        //             ],
+        //   "pattern": [
+        //     {
+        //       "regexp": "^(.*?):(\\d+):.*(warning|error).*:\\s+(.*)$",
+        //       "file": 1,
+        //       "line": 2,
+        //       "severity": 3,
+        //       "message": 4
+        //     }
+        //   ]
+        // }
       ]
-    }
+    },
+    {
+      "label": "Run in CSpect",
+      "type": "shell",
+      "command": "cspect -brk -w3 -vsync -zxnext -nextrom -map=${fileDirname}/${fileBasenameNoExtension}.map -mmc=${fileDirname}/${fileDirname}/${fileBasenameNoExtension}.nex",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
  ]
 }

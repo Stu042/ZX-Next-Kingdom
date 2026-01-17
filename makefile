@@ -12,7 +12,7 @@ OBJS =	obj/main.o obj/data.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
 	obj/FrontEnd.o obj/FrontEndAsm.o obj/GameData.o \
 	obj/GamePlay.o obj/GamePlayAsm.o obj/GamePlayAssignResources.o \
 	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYear.o \
-	obj/PlateOfFoodAsm.o
+	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o
 
 
 kingdom.nex: $(OBJS) 
@@ -79,9 +79,18 @@ obj/GamePlayAssignResources.o: GamePlayAssignResources.c FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GamePlayAssignResources.o GamePlayAssignResources.c
 
 
-# Plate of food pic
-obj/PlateOfFoodAsm.o: pics/PlateOfFood.asm pics/Pics.h
-	$(CC) $(CFLAGS) --codesegPAGE_30_FOOD_SEG --constsegPAGE_30_FOOD_SEG -o obj/PlateOfFoodAsm.o pics/PlateOfFood.asm
+# Pics
+obj/PlateOfFood.o: pics/PlateOfFood.asm
+	$(CC) $(CFLAGS) --codesegPAGE_30_FOOD_SEG --constsegPAGE_30_FOOD_SEG -o obj/PlateOfFood.o pics/PlateOfFood.asm
+
+obj/PlantSeed.o: pics/PlantSeed.asm
+	$(CC) $(CFLAGS) --codesegPAGE_34_SEED_SEG --constsegPAGE_30_FOOD_SEG -o obj/PlantSeed.o pics/PlantSeed.asm
+
+obj/Dyke.o: pics/Dyke.asm
+	$(CC) $(CFLAGS) --codesegPAGE_38_DYKE_SEG --constsegPAGE_30_FOOD_SEG -o obj/Dyke.o pics/Dyke.asm
+
+obj/Fields.o: pics/Fields.asm
+	$(CC) $(CFLAGS) --codesegPAGE_42_FIELDS_SEG --constsegPAGE_30_FOOD_SEG -o obj/Fields.o pics/Fields.asm
 
 
 
