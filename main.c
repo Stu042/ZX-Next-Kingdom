@@ -30,7 +30,6 @@
 //  Handle the main loop and state changes
 // ****************************************************************************************
 void MainLoop(void) {
-	SetState(State_InitFrontEnd);
 	while (1) {
 		switch (GameState) {		// Do game states
 			case State_InitFrontEnd:
@@ -132,6 +131,7 @@ int main(void) {
 	//UploadSprites(0, 0x04, (uint16 *)0x5678);
 
 	InitDebounce();
+	SetState(State_InitFrontEnd);
 	MainLoop();
 
 	return 0;

@@ -10,13 +10,16 @@ This (and the original framework) is licensed by the MIT License, so feel free t
 
 ## Game Play
 
+Kingdom is heavily based on the first computer game I played, Kingdom on the Apple II. I don't expect anyone to remember this game, it was a long time ago and on a computer not many people had. I also don't know exactly how the numbers worked in kingdom, so I have used my own understanding of how they should work for this game.
+
+
 ### Start Game
 
 For your first game press 2 New Game.
 
 If you have played before you can press 3 Load Game, to choose a save game to load. Or 1 Continue Game to contine the last played game.
 
-*Only New Game is currently implementated*
+*Only New Game is currently implemented*
 ![Start Game Menu](docs/Menu.png)
 
 
@@ -25,7 +28,7 @@ If you have played before you can press 3 Load Game, to choose a save game to lo
 On this page you assign the amount of people to do a certain job for the year to come.
 Here the yellow cursor is on the top item, "Working Fields". Type in a number to assign people and press Enter or arrow down to go to the next item.
 
-You have 20 Population in total at the moment so don't try to assign more than that in total.
+You have 20 Population at the moment so don't try to assign more than that in total.
 
 When you press Enter on the bottom item we will go to the next resource to assign.
 
