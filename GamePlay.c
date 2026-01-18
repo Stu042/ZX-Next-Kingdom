@@ -42,7 +42,7 @@
 //  Init the Game
 //  ***************************************************************************************
 void GP_Init(void) {
-	Border(INK_BLUE);
+	Border(INK_BLACK);
 	ClsL2(0);
 	VBlankSwap();
 	SetState(State_PopInit);

@@ -359,7 +359,7 @@ static void doLand(void) {
 		int32 LandFloodedPerc = (DykeStateFrac * 100 /  DYKESTATE_MAX) / 2;
 		LandFlooded = rndPerc(LandSize, LandFloodedPerc);
 	}
-	int32 landReclaimedMax = LandSize * PopOnWall / 4;
+	int32 landReclaimedMax = (LandSize * PopOnWall) >> 2;
 	LandReclaimed = rndRange(0, landReclaimedMax);
 	LandIncrease = LandReclaimed - LandFlooded;
 	#ifdef DEBUG

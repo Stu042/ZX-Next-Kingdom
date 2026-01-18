@@ -3,26 +3,43 @@
 ### A resource management game for the ZX Spectrum Next.
 
 
+ZX-Next-Kingdom Copyright (c) 2025 Stuart Geddes.
+Based on the ULA C Framework for the ZX Spectrum Next by Mike Dailly 2025. Edited to work with the ZX Nexts Layer 2 display running at a resolution of 256x192 pixels.
+
+This (and the original framework) is licensed by the MIT License, so feel free to use this code any way you want.
+
+## Game Play
+
+### Start Game
+
+For your first game press 2 New Game.
+
+If you have played before you can press 3 Load Game, to choose a save game to load. Or 1 Continue Game to contine the last played game.
+
+*Only New Game is currently implementated*
+![Start Game Menu](docs/Menu.png)
 
 
+### Playing the Game
 
+On this page you assign the amount of people to do a certain job for the year to come.
+Here the yellow cursor is on the top item, "Working Fields". Type in a number to assign people and press Enter or arrow down to go to the next item.
 
-CFrame-Layer2-Kingdom Copyright (c) 2025 Stuart Geddes
+You have 20 Population in total at the moment so don't try to assign more than that in total.
 
-z88dk C Simple Example using overlays
-Copyright (c) Mike Dailly 2025
+When you press Enter on the bottom item we will go to the next resource to assign.
 
+![Population resource](docs/FirstPage.png)
 
-This is a very simple framework for z88dk to get you going. 
-It has a main loop and a "kernel" that stays paged in at $E000 with an IRQ handler
+Next we assign the Grain, how many we give to the people to eat and how many we plant.
 
+Note we don't need to assign all of a resource, it can be useful (often useful) to only assign some of the resource.
 
-V1.1.0 - 03/11/2025
--------------------
-* Added Load(char* pName, uint16 bank, uint16 offset) function - can load >64k
-* Added UploadCopper(uint8* pCopper, uint16 length) function - uploads with DMA
-* Border(uint8 colour) function - sets ULA border colour
-* Added sprite struct
-* Updated Copyright message above, "all rights" are no longer reserved due to MIT license.
+![Food resource](docs/Grains.png)
 
+After assigning Grains the year is run and we see the results of our decisions.
+
+You will see several screens with detail of each event with a summary page at the end.
+
+![Food resource](docs/Result.png)
 
