@@ -34,7 +34,7 @@ static EditValue editFields[POP_FIELDS_COUNT] = {
 };
 
 static uint8 editFieldsPics[POP_FIELDS_COUNT] = {
-	FieldsPic,DykePic,DykePic
+	FieldsPic,DykePic,DefensePic
 };
 
 static int8 popIndex;

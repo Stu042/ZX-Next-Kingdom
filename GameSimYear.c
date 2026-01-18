@@ -4,6 +4,7 @@
 #include "GameData.h"
 #include "GamePop.h"
 #include "GameGrain.h"
+#include "pics/Pics.h"
 
 
 //////////////////////////////
@@ -18,7 +19,7 @@
 
 
 #define GRAIN_GROWTH_RATE (20)
-#define GRAIN_PER_ACRE (20)
+#define GRAIN_PER_ACRE (40)
 
 #define Frac (100)
 #define GSY_TEXT_TOP (128)
@@ -27,6 +28,13 @@
 
 #define DYKESTATE_MIN (Frac / 2)
 #define DYKESTATE_MAX (Frac * 2)
+
+
+static int8 picIndex;
+static uint8 pics[] = {
+	NewBornPic
+};
+
 
 
 //////////////////////////////
@@ -39,6 +47,12 @@ static void doLand(void);
 static void doGrain(void);
 
 static void renderYearResult(void);
+static void updatePic(void);
+static void showPopChange(void);
+static void showGrainChange(void);
+static void showLandChange(void);
+static void showSummary(void);
+
 
 
 //////////////////////////////
@@ -67,6 +81,10 @@ void GameSimYearInit(void) {
 	LandIncrease = 0;
 
 	BanditsKilled = 0;
+	AttackChance = 0;
+
+
+	picIndex = 0;
 	SetState(State_SimYearRun);
 }
 
@@ -119,137 +137,123 @@ void GameSimYearPause(void) {
 // Internal functions
 
 
+
 static void renderYearResult(void) {
-	uint8 y=0;
-	if (Births > 0) {
-		ClsL2(0);
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "We were blessed with newborns this year.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Births ", Births);
-		VBlankSwap();
-		HangForKey();
-	}
+	showPopChange();
+	showLandChange();
+	showGrainChange();
+	showSummary();
+}
 
-	if (DeathsStarvation > 0) {
-		ClsL2(0);
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "We did not have enough food to feed our people.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Starved: ", DeathsStarvation);
-		VBlankSwap();
-		HangForKey();
-	}
 
-	if (DeathsNatural > 0) {
+static void showChange(uint8 x, uint8 y, int32 value, char *valHeader, char *message) {
+	if (value > 0) {
 		ClsL2(0);
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "Unfortunately some people died due to natural causes.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Natural deaths: ", DeathsNatural);
+		PrintProp(x, GSY_TEXTY(y++), StdTextColour, message);
+		PrintSimpleValue(x, GSY_TEXTY(y), StdTextColour, valHeader, value);
 		VBlankSwap();
 		HangForKey();
-	}
+	}	
+}
 
-	if (DeathsDefending > 0) {
-		ClsL2(0);
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "The bandits attacked and killed some of our people.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Killed: ", DeathsDefending);
-		VBlankSwap();
-		HangForKey();
-	}
-	
+static void show3WayChange(uint8 x, uint8 y, int32 valueDelta, int32 value, char *valHeader, char *valPlus, char *messagePlus, char *valMinus, char *messageMinus, char *messageConstant) {
 	ClsL2(0);
-	if (PopIncrease > 0) {
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "All in, our population has increased.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Population increase: ", PopIncrease);
-	} else if (PopIncrease < 0) {
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "This means we now have less people.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Population decrease: ", PopIncrease * -1);
+	if (valueDelta > 0) {
+		PrintProp(x, GSY_TEXTY(y++), StdTextColour, messagePlus);
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, valPlus, valueDelta);
+	} else if (valueDelta < 0) {
+		PrintProp(x, GSY_TEXTY(y++), StdTextColour, messageMinus);
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, valMinus, valueDelta * -1);
 	} else {
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "Over this year our population remains constant.");
+		PrintProp(x, GSY_TEXTY(y++), StdTextColour, messageConstant);
 	}
+	PrintSimpleValue(0, GSY_TEXTY(y), StdTextColour, valHeader, value);
 	VBlankSwap();
 	HangForKey();
+}
 
+static void showPopChange(void) {
+	showChange(0, 0, Births, "Births ", "We were blessed with newborns this year.");
+	showChange(0, 0, DeathsStarvation, "Starved ", "We did not have enough food to feed our people.");
+	showChange(0, 0, DeathsNatural, "Natural deaths ", "Unfortunately some people died due to natural causes.");
+	showChange(0, 0, DeathsDefending, "Killed ", "The bandits attacked and killed some of our people.");
+	show3WayChange(0, 0, PopIncrease, Population, "Population ", "Population increase ", "All in, our population has increased.", "Population decrease ", "This means we now have less people.", "Over this year our population remains constant.");
+	
+	// ClsL2(0);
+	// if (PopIncrease > 0) {
+	// 	PrintProp(0, GSY_TEXTY(0), StdTextColour, "All in, our population has increased.");
+	// 	PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Population increase ", PopIncrease);
+	// } else if (PopIncrease < 0) {
+	// 	PrintProp(0, GSY_TEXTY(0), StdTextColour, "This means we now have less people.");
+	// 	PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Population decrease ", PopIncrease * -1);
+	// } else {
+	// 	PrintProp(0, GSY_TEXTY(0), StdTextColour, "Over this year our population remains constant.");
+	// }
+	// VBlankSwap();
+	// HangForKey();
+}
 
+static void showGrainChange(void) {
+	uint8 y=0;
 	ClsL2(0);
 	if (GrainIncrease > 0) {
-		y = 0;
 		if (GrainPlanted > 0) {
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain planted: ", GrainPlanted);
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain grown: ", GrainGrown);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain planted ", GrainPlanted);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain grown ", GrainGrown);
 		}
 		if (GrainFlooded > 0) {
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain lost to flooding: ", GrainFlooded);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain lost to flooding ", GrainFlooded);
 		}
 		if (GrainsStolen > 0) {
 			PrintProp(0, GSY_TEXTY(y++), StdTextColour, "The bandits stole some of our grain.");
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain stolen: ", GrainsStolen);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain stolen ", GrainsStolen);
 		}
 		PrintProp(0, GSY_TEXTY(y++), StdTextColour, "We produced more grain than we consumed.");
-		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain Increase: ", GrainIncrease);
-		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain: ", Grains);
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain Increase ", GrainIncrease);
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain ", Grains);
 	} else if (GrainIncrease < 0) {
 		if (GrainPlanted > 0) {
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain planted: ", GrainPlanted);
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain grown: ", GrainGrown);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain planted ", GrainPlanted);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain grown ", GrainGrown);
 		}
 		if (GrainFlooded > 0) {
 			PrintProp(0, GSY_TEXTY(y++), StdTextColour, "The fields flooded and we lost grain.");
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain lost: ", GrainFlooded);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain lost ", GrainFlooded);
 		}
 		if (GrainsStolen > 0) {
 			PrintProp(0, GSY_TEXTY(y++), StdTextColour, "The bandits stole some of our grain.");
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain stolen: ", GrainsStolen);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain stolen ", GrainsStolen);
 		}
-		PrintProp(0, GSY_TEXTY(y++), StdTextColour, "We lost grain.");
-		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Total Grain lost: ", GrainIncrease * - 1);
+		//PrintProp(0, GSY_TEXTY(y++), StdTextColour, "We lost grain.");
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Total Grain lost ", GrainIncrease * - 1);
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain: ", Grains);
 	} else if (GrainIncrease == 0) {
 		if (GrainPlanted > 0) {
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain planted: ", GrainPlanted);
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain grown: ", GrainGrown);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain planted ", GrainPlanted);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain grown ", GrainGrown);
 		}
 		if (GrainFlooded > 0) {
 			PrintProp(0, GSY_TEXTY(y++), StdTextColour, "The fields flooded and we lost grain.");
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain lost: ", GrainFlooded);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain lost ", GrainFlooded);
 		}
 		if (GrainsStolen > 0) {
 			PrintProp(0, GSY_TEXTY(y++), StdTextColour, "The bandits stole some of our grain.");
-			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain stolen: ", GrainsStolen);
+			PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain stolen ", GrainsStolen);
 		}
 		PrintProp(0, GSY_TEXTY(y++), StdTextColour, "Our grain reserves remain constant.");
-		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain: ", Grains);
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "Grain ", Grains);
 	}
 	VBlankSwap();
 	HangForKey();
+}
 
-	if (LandReclaimed > 0) {
-		ClsL2(0);
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "Our dyke workers managed to reclaim some land.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Land reclaimed: ", LandReclaimed);
-		VBlankSwap();
-		HangForKey();
-	}
-	if (LandFlooded > 0) {
-		ClsL2(0);
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "The rains were bad this year, we lost land to flooding.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Land flooded: ", LandFlooded);
-		VBlankSwap();
-		HangForKey();
-	}
+static void showLandChange(void) {
+	showChange(0,0, LandReclaimed, "Land reclaimed ", "Our dyke workers managed to reclaim some land.");
+	showChange(0,0, LandFlooded, "Land flooded ", "The rains were bad this year, we lost land to flooding.");
+	show3WayChange(0,0, LandIncrease, LandSize, "Land ", "Land increase ", "Our land increased this year.", "Land lost ", "We lost land this year.", "Our land remains constant.");
+}
 
-	ClsL2(0);
-	if (LandIncrease > 0) {
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "Our land increased this year.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Land increase: ", LandIncrease);
-		PrintSimpleValue(0, GSY_TEXTY(2), StdTextColour, "Land: ", LandSize);
-	} else if (LandIncrease < 0) {
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "We lost land this year.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Land lost: ", LandIncrease * -1);
-		PrintSimpleValue(0, GSY_TEXTY(2), StdTextColour, "Land: ", LandSize);
-	} else if (LandIncrease == 0) {
-		PrintProp(0, GSY_TEXTY(0), StdTextColour, "Our land remains constant.");
-		PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Land: ", LandSize);
-	}
-	VBlankSwap();
-	HangForKey();
-	
+static void showSummary(void) {
 	ClsL2(0);
 	PrintProp(0, GSY_TEXTY(0), StdTextColour, "In summary our resources are.");
 	PrintSimpleValue(0, GSY_TEXTY(1), StdTextColour, "Population: ", Population);
@@ -283,11 +287,7 @@ static int32 doDeaths(void) {
 	return DeathsStarvation + DeathsNatural;
 }
 
-
 static int32 doBandits(void) {
-	GrainsStolen = 0;
-	DeathsDefending = 0;
-	BanditsKilled = 0;
 	int32 popDefendingFrac;
 	if (PopDefending == 0) {
 		popDefendingFrac = 1;
@@ -295,8 +295,8 @@ static int32 doBandits(void) {
 		popDefendingFrac = PopDefending * Frac;
 	}
 	int32 attackStrength = (BanditCount * BanditHealthFrac) / popDefendingFrac;
-	int32 attackChance = rndRange(attackStrength >> 1, attackStrength);
-	if (attackChance >= Frac) {						// Bandits are attacking
+	AttackChance = rndRange(attackStrength >> 1, attackStrength);
+	if (AttackChance > 0) {						// Bandits are attacking
 		int32 overkill = BanditCount - (PopDefending << 1);
 		if (overkill > 0){
 			DeathsDefending += rndRange(PopDefending >> 1, PopDefending);
@@ -310,9 +310,6 @@ static int32 doBandits(void) {
 			BanditHealthFrac -= Frac >> 2;
 			BanditsKilled = rndRange(BanditCount >> 3, BanditCount >> 1);
 		}
-		int32 maxGrainsStolen = BanditCount * 5;
-		maxGrainsStolen = min(BanditCount * 5, Grains);
-		GrainsStolen = rndRange(maxGrainsStolen >> 4, maxGrainsStolen);
 	} else {
 		BanditHealthFrac += rndRange(1, Frac / 8);
 		BanditCount += rndRange(0, 2);
@@ -326,7 +323,6 @@ static int32 doBandits(void) {
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "DeathsDefending: ", DeathsDefending);
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "BanditsKilled: ", BanditsKilled);
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "BanditHealth: ", BanditHealth);
-		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "GrainsStolen: ", GrainsStolen);
 	#endif
 	return DeathsDefending;
 }
@@ -376,20 +372,37 @@ static void doLand(void) {
 
 
 static void doGrain(void) {
+	GrainsStolen = 0;
 	int32 grainGrownMax = GrainPlanted * GRAIN_GROWTH_RATE * PopInFields;	// planted * typical growth * people looking after it
 	grainGrownMax = min(grainGrownMax, LandSize * GRAIN_PER_ACRE);
-	GrainGrown = rndRange(GrainPlanted << 1, grainGrownMax);
+	GrainGrown = rndRange(grainGrownMax >> 1, grainGrownMax);
 	if (LandSize == 0 || GrainGrown == 0) {
 		GrainFlooded = 0;
 	} else {
 		GrainFlooded = ((LandFlooded * Frac) / LandSize) * GrainGrown / Frac;	// ratio land flooded * grain in fields
+	}
+	if (AttackChance > 0) {
+		int32 maxGrainsStolen = BanditCount * 5;
+		maxGrainsStolen = min(BanditCount * 5, Grains);
+		GrainsStolen = rndRange(maxGrainsStolen >> 4, maxGrainsStolen);
 	}
 	GrainIncrease = GrainGrown - GrainFlooded - GrainAte - GrainPlanted - GrainsStolen;
 	#ifdef DEBUG
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "grainGrownMax: ", grainGrownMax);
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "GrainGrown: ", GrainGrown);
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "GrainFlooded: ", GrainFlooded);
+		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "GrainsStolen: ", GrainsStolen);
 		PrintSimpleValue(0, GSY_TEXTY(y++), StdTextColour, "GrainIncrease: ", GrainIncrease);
 	#endif
+}
+
+
+
+
+static void updatePic(void) {
+	if (pics[picIndex] != 0) {
+		DoubleBlitLargeImage(pics[picIndex], LargeImageSize);
+	}
+	BankGameData();
 }
 

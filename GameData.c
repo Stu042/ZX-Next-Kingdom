@@ -13,6 +13,7 @@ int32 LandSize;
 int32 DykeStateFrac;
 int32 BanditCount;
 int32 BanditHealthFrac;
+int32 AttackChance;
 
 
 // grain

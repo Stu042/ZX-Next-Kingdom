@@ -14,7 +14,7 @@ extern int32 LandSize;
 extern int32 DykeStateFrac;
 extern int32 BanditCount;
 extern int32 BanditHealthFrac;
-
+extern int32 AttackChance;
 
 // grain
 
