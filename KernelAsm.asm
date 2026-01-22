@@ -201,12 +201,12 @@ screen_banks:		DB 0				; LSB: The visible screen
 ;===========================================================================
 	PUBLIC _ClsLast2, ClsLast2
 ClsLast2:
-			LD 	E, L			; Get the colour from HL
+			ld 	E, L			; Get the colour from HL
 _ClsLast2:
-			LD	A,(screen_banks+1)	; Get the offscreen screen bank
+			ld	A,(screen_banks+1)	; Get the offscreen screen bank
 			add	a,4			; get first of last 2 banks
 			ld	d,a
-			LD 	B,2
+			ld 	B,2
 			jr	ClsL2@loop
 
 ;===========================================================================
@@ -215,11 +215,11 @@ _ClsLast2:
 ;===========================================================================
 	PUBLIC _ClsFirst4, ClsFirst4
 ClsFirst4:
-			LD 	E, L			; Get the colour from HL
+			ld 	E, L			; Get the colour from HL
 _ClsFirst4:
-			LD	A,(screen_banks+1)	; Get the offscreen screen bank
+			ld	A,(screen_banks+1)	; Get the offscreen screen bank
 			ld	d,a
-			LD 	B,4
+			ld 	B,4
 			jr	ClsL2@loop
 
 

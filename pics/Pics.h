@@ -13,5 +13,6 @@
 #define KingdomStatePic (58)
 #define StarvedPic (62)
 #define ScrollPic (66)
+#define FloodPic (68)
 
 

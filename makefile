@@ -14,7 +14,7 @@ OBJS =	obj/main.o obj/data.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
 	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYear.o \
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
 	obj/NewBorn.o obj/GrainBundle.o obj/KingdomState.o obj/Starved.o \
-	obj/Scroll.o
+	obj/Scroll.o obj/Flood.o
 
 
 kingdom.nex: $(OBJS) 
@@ -111,6 +111,9 @@ obj/Starved.o: pics/Starved.asm
 
 obj/Scroll.o: pics/Scroll.asm
 	$(CC) $(CFLAGS) --codesegPAGE_66_SCROLL_SEG --constsegPAGE_66_SCROLL_SEG -o obj/Scroll.o pics/Scroll.asm
+
+obj/Flood.o: pics/Flood.asm
+	$(CC) $(CFLAGS) --codesegPAGE_68_FLOOD_SEG --constsegPAGE_68_FLOOD_SEG -o obj/Flood.o pics/Flood.asm
 
 
 

@@ -158,9 +158,8 @@ static void showChange(uint8 x, uint8 y, int32 value, char *valHeader, char *mes
 		if (pic != 0) {
 			DoubleBlitLargeImage(pic, LargeImageSize);
 			BankGameData();
-			//ClsLast2(0);
 		} else {
-			//ClsL2(0);
+			ClsFirst4(0);
 		}
 		BlitLargeImageAt(128, ScrollPic, ScrollImageSize);
 		PrintProp(x, GSY_TEXTY(y++), StdTextColour, message);
@@ -255,14 +254,13 @@ static void showGrainChange(void) {
 
 static void showLandChange(void) {
 	showChange(10,0, LandReclaimed, "Land reclaimed ", "Our dyke workers managed to reclaim some land.", 0);
-	showChange(10,0, LandFlooded, "Land flooded ", "The rains were bad this year, we lost land to flooding.", 0);
+	showChange(10,0, LandFlooded, "Land flooded ", "The rains were bad this year, we lost land to flooding.", FloodPic);
 	show3WayChange(10,0, LandIncrease, LandSize, "Land ", "Land increase ", "Our land increased this year.", "Land lost ", "We lost land this year.", "Our land remains constant.");
 }
 
 
 static void showSummary(void) {
 	int8 y = 0;
-	//ClsL2(0);
 	BlitLargeImageAt(128, ScrollPic, ScrollImageSize);
 	BlitLargeImage(KingdomStatePic, LargeImageSize);
 	if (Population <= 0) {
@@ -311,8 +309,8 @@ static int32 doBirths(void) {
 }
 
 static int32 doDeaths(void) {
-	DeathsStarvation = rndRange(0, Population - GrainAte);	// the unfed are likely to die
-	DeathsNatural = rndPerc(Population, 10);			// plus random upto 10% die
+	DeathsStarvation = rndRange(0, (Population - GrainAte) + 1);	// the unfed are likely to die
+	DeathsNatural = rndPerc(Population * Frac, 10) / Frac;			// plus random upto 10% die
 	return DeathsStarvation + DeathsNatural;
 }
 
