@@ -13,7 +13,8 @@ OBJS =	obj/main.o obj/data.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
 	obj/GamePlay.o obj/GamePlayAsm.o obj/GamePlayAssignResources.o \
 	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYear.o \
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
-	obj/NewBorn.o
+	obj/NewBorn.o obj/GrainBundle.o obj/KingdomState.o obj/Starved.o \
+	obj/Scroll.o
 
 
 kingdom.nex: $(OBJS) 
@@ -98,6 +99,19 @@ obj/Defense.o: pics/Defense.asm
 
 obj/NewBorn.o: pics/NewBorn.asm
 	$(CC) $(CFLAGS) --codesegPAGE_50_NEWBORN_SEG --constsegPAGE_50_NEWBORN_SEG -o obj/NewBorn.o pics/NewBorn.asm
+
+obj/GrainBundle.o: pics/GrainBundle.asm
+	$(CC) $(CFLAGS) --codesegPAGE_54G_RAINBUNDLE_SEG --constsegPAGE_54G_RAINBUNDLE_SEG -o obj/GrainBundle.o pics/GrainBundle.asm
+
+obj/KingdomState.o: pics/KingdomState.asm
+	$(CC) $(CFLAGS) --codesegPAGE_58_KINGDOMSTATE_SEG --constsegPAGE_58_KINGDOMSTATE_SEG -o obj/KingdomState.o pics/KingdomState.asm
+
+obj/Starved.o: pics/Starved.asm
+	$(CC) $(CFLAGS) --codesegPAGE_62_STARVED_SEG --constsegPAGE_62_STARVED_SEG -o obj/Starved.o pics/Starved.asm
+
+obj/Scroll.o: pics/Scroll.asm
+	$(CC) $(CFLAGS) --codesegPAGE_66_SCROLL_SEG --constsegPAGE_66_SCROLL_SEG -o obj/Scroll.o pics/Scroll.asm
+
 
 
 

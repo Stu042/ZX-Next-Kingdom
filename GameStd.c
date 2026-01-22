@@ -8,11 +8,11 @@
 
 
 
-const uint8 StdTextColour = 20;
-const uint8 LoLightTextColour = 12;
+const uint8 StdTextColour = 0;
+const uint8 LoLightTextColour = 68;
 
 
-const uint8 valCol = 20;
+const uint8 valCol = 0;
 const uint8 valHighlightCol = 252;
 const uint8 valColLarge = 224;
 const uint8 valColLow = 252;
@@ -30,9 +30,9 @@ void PrintMainResources(void) {
 	itoa(Year, buf, 10);
 	PrintProp(230, stdTopTextPos(8), LoLightTextColour, buf);
 
-	PrintValue(0, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
-	PrintValue(0, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
-	PrintValue(0, 80, stdTopTextPos(24), StdTextColour, "Grains", Grains);
+	PrintValue(10, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
+	PrintValue(10, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
+	PrintValue(10, 80, stdTopTextPos(24), StdTextColour, "Grains", Grains);
 }
 
 

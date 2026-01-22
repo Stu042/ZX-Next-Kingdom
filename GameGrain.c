@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 #include "Kernel.h"
 #include "GameGrain.h"
@@ -31,8 +32,8 @@ static char* grainErrorStr;
 
 #define GRAIN_FIELDS_COUNT (2)
 static EditValue editFields[GRAIN_FIELDS_COUNT] = {
-	{80, 0, grainTopTextPos(32), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
-	{80, 0, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
+	{80, 10, grainTopTextPos(32), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
+	{80, 10, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
 };
 
 static uint8 editFieldsPics[GRAIN_FIELDS_COUNT] = {
@@ -41,7 +42,7 @@ static uint8 editFieldsPics[GRAIN_FIELDS_COUNT] = {
 
 
 static char* grainErrorTooManyStr = "Reduce the amount of grain.";
-
+static bool finished;
 
 //////////////////////////////
 // Internal protos
@@ -68,7 +69,7 @@ void GameGrainInit(void) {
 	GrainPlanted = 0;
 	UsedGrain = 0;
 	grainErrorStr = NULL;
-	SetState(State_GrainsRun);
+	finished = false;
 	ClsL2(0);
 	SwapL2();
 	ClsL2(0);
@@ -78,18 +79,19 @@ void GameGrainInit(void) {
 
 
 
-void GameGrainRun(void) {
+bool GameGrainRun(void) {
 	input();
 	render();
+	return finished;
 }
 
 
-void GameGrainValidate(void) {
+bool GameGrainValidate(void) {
 	if (UsedGrain <= Grains) {
-		SetState(State_SimYearInit);
+		return true;
 	} else {	// show error
 		grainErrorStr = grainErrorTooManyStr;
-		SetState(State_GrainsRun);
+		return false;
 	}
 }
 
@@ -100,7 +102,7 @@ void GameGrainValidate(void) {
 
 static void input(void) {
 	int8 oldIndex = grainIndex;
-	bool finished = KeyedInput(editFields, &grainIndex, GRAIN_FIELDS_COUNT);
+	finished = KeyedInput(editFields, &grainIndex, GRAIN_FIELDS_COUNT);
 	UsedGrain = EditValueCalcTotal(editFields, GRAIN_FIELDS_COUNT);
 	ltoa(UsedGrain, UsedGrainStr, 10);
 	if (finished) {
@@ -111,13 +113,19 @@ static void input(void) {
 
 
 static void render(void) {
+	if (finished) {
+		ClsL2(0);
+		VBlankSwap();
+		return;
+	}
 	updatePic();
-	ClsLast2(0);
+	BlitLargeImageAt(128, ScrollPic, ScrollImageSize);
+	//ClsLast2(0);
 	PrintMainResources();
 	PrintResourceValue(160, grainTopTextPos(24), Grains, UsedGrain, UsedGrainStr);
 	PrintEditValues(editFields, GRAIN_FIELDS_COUNT);
 	if(grainErrorStr) {
-		PrintProp(0, grainTopTextPos(48), StdTextColour, grainErrorStr);
+		PrintProp(10, grainTopTextPos(48), StdTextColour, grainErrorStr);
 	}
 	VBlankSwap();
 }

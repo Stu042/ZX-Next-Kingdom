@@ -10,7 +10,7 @@ This (and the original framework) is licensed by the MIT License, so feel free t
 
 ## Game Play
 
-Kingdom is heavily based on the first computer game I played, Kingdom on the Apple II. I don't expect anyone to remember this game, it was a long time ago and on a computer not many people had. I also don't know exactly how the numbers worked in kingdom, so I have used my own understanding of how they should work for this game.
+Kingdom is heavily based on the first computer game I played, Kingdom on the Apple II. I don't expect anyone to remember this game, it was a long time ago and on a computer not many people had. I also don't know exactly how the numbers worked in kingdom, so I have used my own understanding and judgement of how they should work for this game.
 
 
 ### Start Game

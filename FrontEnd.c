@@ -25,7 +25,7 @@
 
 
 // internal protos
-static void actionInput(void);
+static eGameState actionInput(void);
 
 
 //  ***************************************************************************************
@@ -56,9 +56,6 @@ void FE_Init(void) {
 	Render1Bpp(10, 20, 140, Abstract_Tree_Left_Highlight_1bpp);
 
 	VBlankSwap();
-
-	// Set state when we're ready to move into the main processing
-	SetState(State_FrontEnd);
 } 
 
 
@@ -66,8 +63,8 @@ void FE_Init(void) {
 //  Process the front end
 //  State_FrontEnd
 //  ***************************************************************************************
-void FE_Run(void) {    
-	actionInput();
+eGameState FE_Run(void) {    
+	eGameState choice = actionInput();
 	BlitTransImage(68,0, 227, kingdom);
 	
 	Render1Bpp(190, 20, 68, Abstract_Tree_1bpp);
@@ -82,6 +79,7 @@ void FE_Run(void) {
 	PrintPropCentre(180, 4, "Made By Stu");
 
 	VBlankSwap();
+	return choice;
 }
 
 
@@ -91,7 +89,6 @@ void FE_Run(void) {
 //  ***************************************************************************************
 void FE_ContinueGame(void) {	// TODO
 	BankGameData();
-	SetState(State_NewGame);
 }
 
 
@@ -108,7 +105,6 @@ void FE_NewGame(void) {
 	DykeStateFrac = 1000;
 	BanditCount = 10;
 	BanditHealthFrac = 50;
-	SetState(State_QuitFrontEnd);
 }
 
 
@@ -118,7 +114,6 @@ void FE_NewGame(void) {
 //  ***************************************************************************************
 void FE_LoadGame(void) {	// TODO
 	BankGameData();
-	SetState(State_NewGame);
 }
 
 
@@ -127,7 +122,6 @@ void FE_LoadGame(void) {	// TODO
 //  State_QuitFrontEnd
 //  ***************************************************************************************
 void FE_Quit(void) {    
-	SetState(State_InitGame);
 } 
 
 
@@ -137,19 +131,17 @@ void FE_Quit(void) {
 
 
 // Action user input
-static void actionInput(void) {
+static eGameState actionInput(void) {
 	DebounceReadKeyboard();
 	if(DebounceKeys[VK_1] != 0) {
-		SetState(State_ContinueGame);
-		return;
+		return State_ContinueGame;
 	}
 	if(DebounceKeys[VK_2] != 0) {
-		SetState(State_NewGame);
-		return;
+		return State_NewGame;
 	}
 	if(DebounceKeys[VK_3] != 0) {
-		SetState(State_LoadGame);
-		return;
+		return State_LoadGame;
 	}
+	return State_None;
 }
 

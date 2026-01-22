@@ -6,9 +6,8 @@
 
 
 extern void GameSimYearInit(void);
-extern void GameSimYear(void);
+extern void GameSimYearRun(void);
 extern void GameSimYearRender(void);
-extern void GameSimYearPause(void);
 
 
 #endif

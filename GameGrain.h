@@ -7,8 +7,8 @@
 
 
 extern void GameGrainInit(void);
-extern void GameGrainRun(void);
-extern void GameGrainValidate(void);
+extern bool GameGrainRun(void);
+extern bool GameGrainValidate(void);
 
 
 

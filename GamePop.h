@@ -4,9 +4,10 @@
 #include "GameStd.h"
 #include "GameData.h"
 
+
 extern void GamePopInit(void);
-extern void GamePopRun(void);
-extern void GamePopValidate(void);
+extern bool GamePopRun(void);
+extern bool GamePopValidate(void);
 
 
 

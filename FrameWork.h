@@ -51,6 +51,7 @@ typedef	int64_t		int64;
 #define	SetState(state)	(GameState=(state))
 
 typedef enum eGameStateType {
+	State_None = 0,
 	State_InitFrontEnd = 1,		// init the front end
 	State_FrontEnd,			// Process front end
 	State_ContinueGame,
@@ -71,7 +72,8 @@ typedef enum eGameStateType {
 	State_SimYearInit,
 	State_SimYearRun,
 	State_SimYearRender,
-	State_SimYearPause,
+	State_SaveGame,
+	State_IsEndGame,
 
 	State_QuitGame,			// quit the game
 } eGameState;

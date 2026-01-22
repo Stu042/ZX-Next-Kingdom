@@ -369,6 +369,45 @@ UploadSprites:
 			jr		nz, @UpLoadSprite
 			ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; void BlitLargeImageAt(uint8 screenY, uint8 imageBank, uint8 bankCount)
+; Render an image that spans across multiple banks, screenY must be on the start of a bank boundary.
+; Image is full screen width (256 pixels)
+	PUBLIC _BlitLargeImageAt, BlitLargeImageAt
+_BlitLargeImageAt:
+			pop	de		; return addr
+			dec	sp
+			pop	bc		; B = bank count, C = start bank
+			pop	hl
+			push	de		; restore return addr
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Render an image that spans across multiple banks
+; Image is full screen width (256 pixels)
+; B: Y screen pos
+; image Bank		L	-> starts with image data only
+; Bank count		H
+BlitLargeImageAt:
+			push	hl		; H = image bank count, L = start image bank
+			ld	c,0
+			call	GetPixelAddressMemBank
+			pop	bc
+@nextBank:
+			push	af		; save display bank number
+			push	bc		; save B = image bank count, C = image bank
+			NEXTREG	MMU_0,A		; Grab display bank
+			ld	a,c
+			NEXTREG	MMU_1,A		; Grab image bank
+			ld	bc,$2000	; copy $2000 to $000
+			ld	hl,$2000
+			ld	de,0
+			call	DMACopy		; use dma for copy
+			pop	bc
+			pop	af
+			inc	a
+			inc	c
+			djnz	@nextBank
+			ret
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; void BlitLargeImage(uint8 imageBank, uint8 bankCount)
@@ -1893,10 +1932,32 @@ ReadNextRegsSYS:
 ;                               File System
 ; *******************************************************************************************************
 ; *******************************************************************************************************
+filename:	db	"savegame.kingdom"
+
+	PUBLIC _SaveGame, SaveGame
+_SaveGame:
+SaveGame:
+			push	ix
+			call	GetSetDrive
+			ld	ix,filename
+			call	fcreate
+			and	a
+			jr	nz, @save	; created new file so now save
+			call	fOpen
+			jr	z,@exit		; cant open the existing file, aarrrgghhh
+@save:
+			ld	ix,$2000
+			ld	bc,$2000
+			ld	a,(handle)
+			call	fwrite
+			ld	a,(handle)
+			call	fClose
+@exit:
+			pop	ix
+			ret
 
 
 ; *******************************************************************************************************
-;
 ;   Get/Set the drive (get default drive)
 ;
 ; *******************************************************************************************************

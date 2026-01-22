@@ -5,6 +5,7 @@
 // Nightly Builds
 // http://nightly.z88dk.org/
 
+#include "GameData.h"
 #pragma output REGISTER_SP = 0xbfff
 
 #include <arch/zxn.h> // ZX Spectrum Next architecture specfic functions
@@ -35,62 +36,113 @@ void MainLoop(void) {
 			case State_InitFrontEnd:
 				BankFrontEnd();
 				FE_Init();
+				SetState(State_FrontEnd);
 				break;
+
 			case State_FrontEnd:
-				FE_Run();
+				eGameState nextState = FE_Run();	// state set by the menu option selected
+				if (nextState != State_None) {
+					SetState(nextState);
+				}
 				break;
+
 			case State_ContinueGame:
 				FE_ContinueGame();
+				SetState(State_NewGame);
 				break;
+
 			case State_NewGame:
 				FE_NewGame();
+				SetState(State_QuitFrontEnd);
 				break;
+
 			case State_LoadGame:
 				FE_LoadGame();
+				SetState(State_NewGame);
 				break;
 
 			case State_QuitFrontEnd:
 				FE_Quit();
+				SetState(State_InitGame);
 				break;
+
 			case State_InitGame:
 				BankGamePlay();
 				GP_Init();
+				SetState(State_PopInit);
 				break;
 
 			case State_PopInit:
 				GamePopInit();
+				SetState(State_PopRun);
 				break;
+
 			case State_PopRun:
-				GamePopRun();
+				if (GamePopRun()) {
+					SetState(State_PopValidate);
+				}
 				break;
+
 			case State_PopValidate:
-				GamePopValidate();
+				if (GamePopValidate()) {
+					SetState(State_GrainsInit);
+				} else {
+					SetState(State_PopRun);
+				}
 				break;
+
 			case State_GrainsInit:
 				GameGrainInit();
+				SetState(State_GrainsRun);
 				break;
+
 			case State_GrainsRun:
-				GameGrainRun();
+				if (GameGrainRun()) {
+					SetState(State_GrainValidate);
+				}
 				break;
+
 			case State_GrainValidate:
-				GameGrainValidate();
+				if (GameGrainValidate()) {
+					SetState(State_SimYearInit);
+				} else {
+					SetState(State_GrainsRun);
+				}
 				break;
+
 			case State_SimYearInit:
 				GameSimYearInit();
+				SetState(State_SimYearRun);
 				break;
+
 			case State_SimYearRun:
-				GameSimYear();
+				GameSimYearRun();
+				SetState(State_SimYearRender);
 				break;
+
 			case State_SimYearRender:
 				GameSimYearRender();
+				SetState(State_SaveGame);
 				break;
-			case State_SimYearPause:
-				GameSimYearPause();
+
+			case State_SaveGame:
+				GP_SaveGame();
+				SetState(State_IsEndGame);
+				break;
+			
+			case State_IsEndGame:
+				if (GP_IsEndGame()) {
+					SetState(State_QuitGame);
+				} else {
+					SetState(State_PopInit);
+				}
 				break;
 
 			case State_QuitGame:
 				GP_Quit();
+				SetState(State_InitFrontEnd);
 				break;
+
 			default:
 				SetState(State_InitFrontEnd);
 				break;
@@ -121,15 +173,7 @@ int main(void) {
 	ClsL2(0);
 	SwapL2();
 	ClsL2(0);
-
-	// BREAK;
-	// PrintProp(10,20,12, "Hi Stuart");
 	SwapL2();
-	// BREAK;
-
-	//DMACopy(0x4000, 0x4800, 0x800);
-	//UploadSprites(0, 0x04, (uint16 *)0x5678);
-
 	InitDebounce();
 	SetState(State_InitFrontEnd);
 	MainLoop();

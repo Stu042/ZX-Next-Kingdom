@@ -9,7 +9,7 @@ extern void FrontEndTest(void);
 
 extern void FE_Init(void);
 
-extern void FE_Run(void);
+extern eGameState FE_Run(void);
 extern void FE_ContinueGame(void);
 extern void FE_NewGame(void);
 extern void FE_LoadGame(void);

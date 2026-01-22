@@ -152,6 +152,8 @@ extern void Render1Bpp(uint8 x, uint8 y, uint16 col, uint8* oneBpp) __z88dk_call
 
 /// Blit full width image by the bank, i.e. starting image at imageBank, for bankCount renders to top of display.
 extern void BlitLargeImage(uint8 imageBank, uint8 bankCount) __z88dk_callee;
+// Render an image that spans across multiple banks, screenY must be on the start of a bank boundary.
+extern void BlitLargeImageAt(uint8 screenY, uint8 imageBank, uint8 bankCount) __z88dk_callee;
 
 /// Same as BlitLargeImage() but renders to both on and off screen displays.
 extern void DoubleBlitLargeImage(uint8 imageBank, uint8 bankCount) __z88dk_callee;
@@ -160,8 +162,11 @@ extern void DoubleBlitLargeImage(uint8 imageBank, uint8 bankCount) __z88dk_calle
 extern void PrintProp(uint8 x, uint8 y, uint8 col, char *text) __z88dk_callee;
 extern uint8 PropPixelLength(char *text) __z88dk_fastcall;
 
-extern void XorShiftRndSeed(void) __z88dk_fastcall;
+extern void XorShiftRndSeed(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 #define MAX_XOR_SHIFT (65534)
-extern uint16 XorShift(void) __z88dk_fastcall;
+extern uint16 XorShift(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
+
+extern void SaveGame(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
+
 
 #endif	//__KERNEL_H__

@@ -3,6 +3,8 @@
 
 #pragma output CRT_ORG_CODE = 0x2000
 
+char Version[8] = "0.1";
+
 eGameState GameState;
 
 
@@ -18,10 +20,8 @@ int32 AttackChance;
 
 // grain
 
-
 int32 GrainAte;
 int32 GrainPlanted;
-
 int32 UsedGrain;
 
 
@@ -32,8 +32,6 @@ int32 PopOnWall;
 int32 PopDefending;
 
 int32 UsedPop;
-
-
 
 
 // game sim year
