@@ -14,7 +14,8 @@ OBJS =	obj/main.o obj/data.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
 	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYear.o \
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
 	obj/NewBorn.o obj/GrainBundle.o obj/KingdomState.o obj/Starved.o \
-	obj/Scroll.o obj/Flood.o
+	obj/Scroll.o obj/Flood.o obj/Reclaimed.o obj/Population.o obj/LandPic.o \
+	obj/NaturalDeathPic.o obj/BanditDeathsPic.o
 
 
 kingdom.nex: $(OBJS) 
@@ -115,6 +116,20 @@ obj/Scroll.o: pics/Scroll.asm
 obj/Flood.o: pics/Flood.asm
 	$(CC) $(CFLAGS) --codesegPAGE_68_FLOOD_SEG --constsegPAGE_68_FLOOD_SEG -o obj/Flood.o pics/Flood.asm
 
+obj/Reclaimed.o: pics/Reclaimed.asm
+	$(CC) $(CFLAGS) --codesegPAGE_72_RECLAIMED_SEG --constsegPAGE_72_RECLAIMED_SEG -o obj/Reclaimed.o pics/Reclaimed.asm
+
+obj/Population.o: pics/Population.asm
+	$(CC) $(CFLAGS) --codesegPAGE_76_POPULATION_SEG --constsegPAGE_76_POPULATION_SEG -o obj/Population.o pics/Population.asm
+
+obj/LandPic.o: pics/LandPic.asm
+	$(CC) $(CFLAGS) --codesegPAGE_80_LAND_SEG --constsegPAGE_80_LAND_SEG -o obj/LandPic.o pics/LandPic.asm
+
+obj/NaturalDeathPic.o: pics/NaturalDeathPic.asm
+	$(CC) $(CFLAGS) --codesegPAGE_84_NATURALDEATH_SEG --constsegPAGE_84_NATURALDEATH_SEG -o obj/NaturalDeathPic.o pics/NaturalDeathPic.asm
+
+obj/BanditDeathsPic.o: pics/BanditDeathsPic.asm
+	$(CC) $(CFLAGS) --codesegPAGE_88_BANDITDEATH_SEG --constsegPAGE_88_BANDITDEATH_SEG -o obj/BanditDeathsPic.o pics/BanditDeathsPic.asm
 
 
 

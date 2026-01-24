@@ -30,9 +30,14 @@ void PrintMainResources(void) {
 	itoa(Year, buf, 10);
 	PrintProp(230, stdTopTextPos(8), LoLightTextColour, buf);
 
-	PrintValue(10, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
-	PrintValue(10, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
-	PrintValue(10, 80, stdTopTextPos(24), StdTextColour, "Grains", Grains);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(24), StdTextColour, "Grains", Grains);
+
+	ltoa(UsedPop, buf, 10);
+	PrintResourceValue(160, stdTopTextPos(8), Population, UsedPop, buf);
+	ltoa(UsedGrain, buf, 10);
+	PrintResourceValue(160, stdTopTextPos(24), Grains, UsedGrain, buf);
 }
 
 

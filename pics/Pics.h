@@ -14,5 +14,10 @@
 #define StarvedPic (62)
 #define ScrollPic (66)
 #define FloodPic (68)
+#define ReclaimedPic (72)
+#define PopulationPic (76)
+#define LandPic (80)
+#define NaturalDeathPic (84)
+#define BanditDeathsPic (88)
 
 

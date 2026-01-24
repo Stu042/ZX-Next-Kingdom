@@ -32,8 +32,8 @@ static char* grainErrorStr;
 
 #define GRAIN_FIELDS_COUNT (2)
 static EditValue editFields[GRAIN_FIELDS_COUNT] = {
-	{80, 10, grainTopTextPos(32), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
-	{80, 10, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
+	{80, LeftSideMargin, grainTopTextPos(32), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
+	{80, LeftSideMargin, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
 };
 
 static uint8 editFieldsPics[GRAIN_FIELDS_COUNT] = {

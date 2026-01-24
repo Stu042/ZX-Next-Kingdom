@@ -5,6 +5,8 @@
 
 #define BankGameData()	ZXN_NEXTREG_helper(0x51, 24)
 
+extern char Version[8];
+
 extern eGameState GameState;
 
 extern int Year;

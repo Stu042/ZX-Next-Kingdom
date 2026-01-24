@@ -41,9 +41,7 @@ void MainLoop(void) {
 
 			case State_FrontEnd:
 				eGameState nextState = FE_Run();	// state set by the menu option selected
-				if (nextState != State_None) {
-					SetState(nextState);
-				}
+				SetState(nextState);
 				break;
 
 			case State_ContinueGame:

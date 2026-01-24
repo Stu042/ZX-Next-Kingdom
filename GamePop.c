@@ -29,9 +29,9 @@ static char UsedPopStr[EDIT_VALUE_BUF_SIZE];
 
 #define POP_FIELDS_COUNT (3)
 static EditValue editFields[POP_FIELDS_COUNT] = {
-	{80, 10, popTopTextPos(32), true,"Working Fields", PopInFieldsStr, &PopInFields, &Population},
-	{80, 10, popTopTextPos(40), false,"Working Wall",PopOnWallStr, &PopOnWall, &Population},
-	{80, 10, popTopTextPos(48), false,"Defending",PopDefendingStr, &PopDefending, &Population},
+	{80, LeftSideMargin, popTopTextPos(32), true,"Working Fields", PopInFieldsStr, &PopInFields, &Population},
+	{80, LeftSideMargin, popTopTextPos(40), false,"Working Wall",PopOnWallStr, &PopOnWall, &Population},
+	{80, LeftSideMargin, popTopTextPos(48), false,"Defending",PopDefendingStr, &PopDefending, &Population},
 };
 
 static uint8 editFieldsPics[POP_FIELDS_COUNT] = {
@@ -62,6 +62,8 @@ static void updatePic(void);
 
 
 void GamePopInit(void) {
+	UsedGrain = 0;	// set to zero as print resources also prints this value
+
 	popIndex = 0;
 	oldIndex = -1;
 	PopInFieldsStr[0] = 0;

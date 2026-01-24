@@ -28,6 +28,9 @@ typedef struct EDIT_VALUE {
 // Proto vars
 
 
+// Start of text on left side
+#define LeftSideMargin (8)
+
 extern const uint8 StdTextColour;
 extern const uint8 LoLightTextColour;
 

@@ -28,6 +28,9 @@
 static eGameState actionInput(void);
 
 
+static char buf[32];
+static char madeBy[] = "Made By Stu v";
+
 //  ***************************************************************************************
 //  Init the Front End system
 //  State_InitFrontEnd
@@ -38,24 +41,19 @@ void FE_Init(void) {
 	ClsL2(0);
 	BlitTransImage(68,0, 227, kingdom);
 	
-	Render1Bpp(190, 20, 68, Abstract_Tree_1bpp);
-	Render1Bpp(190, 20, 140, Abstract_Tree_Highlight_1bpp);
+	Render(190,20, RightBannerPic);
+	Render(10,20, LeftBannerPic);
 
-	Render1Bpp(10, 20, 68, Abstract_Tree_Left_1bpp);
-	Render1Bpp(10, 20, 140, Abstract_Tree_Left_Highlight_1bpp);
-
-	VBlankSwap();
-
-	ClsL2(0);
-	BlitTransImage(68,0, 227, kingdom);
-	
-	Render1Bpp(190, 20, 68, Abstract_Tree_1bpp);
-	Render1Bpp(190, 20, 140, Abstract_Tree_Highlight_1bpp);
-
-	Render1Bpp(10, 20, 68, Abstract_Tree_Left_1bpp);
-	Render1Bpp(10, 20, 140, Abstract_Tree_Left_Highlight_1bpp);
+	PrintPropCentre(96, 240, "Any key to start game");
+	// PrintProp(90, 48, 240, "1. Continue Game");
+	// PrintProp(90, 64, 240, "2. New Game");
+	// PrintProp(90, 80, 240, "3. Load Game");
+	strcpy(buf, madeBy);
+	strcpy(&buf[strlen(madeBy)], Version);
+	PrintPropCentre(184, 4, buf);
 
 	VBlankSwap();
+	BankGameData();
 } 
 
 
@@ -63,23 +61,15 @@ void FE_Init(void) {
 //  Process the front end
 //  State_FrontEnd
 //  ***************************************************************************************
-eGameState FE_Run(void) {    
-	eGameState choice = actionInput();
-	BlitTransImage(68,0, 227, kingdom);
-	
-	Render1Bpp(190, 20, 68, Abstract_Tree_1bpp);
-	Render1Bpp(190, 20, 140, Abstract_Tree_Highlight_1bpp);
-
-	Render1Bpp(10, 20, 68, Abstract_Tree_Left_1bpp);
-	Render1Bpp(10, 20, 140, Abstract_Tree_Left_Highlight_1bpp);
-	
-	PrintProp(90, 48, 240, "1. Continue Game");
-	PrintProp(90, 64, 240, "2. New Game");
-	PrintProp(90, 80, 240, "3. Load Game");
-	PrintPropCentre(180, 4, "Made By Stu");
-
-	VBlankSwap();
-	return choice;
+eGameState FE_Run(void) {
+	DebounceReadKeyboard();
+	HangForKey();
+	return State_NewGame;
+	// eGameState choice;
+	// do {
+	// 	choice = actionInput();
+	// } while(choice == State_None);
+	// return choice;
 }
 
 

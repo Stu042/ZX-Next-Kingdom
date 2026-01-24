@@ -517,6 +517,47 @@ ImageData:
 @PicCol:	db 0	; trans pix 4
 
 
+
+PUBLIC _Render, Render
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; void Render(uint8 x, uint8 y, uint8* imageSrc);
+;
+_Render:
+			pop	hl			; get return addr
+			pop	bc			; yx pos
+			pop	de			; image src
+			push	hl			; save return addr
+Render:
+			push	iy
+			ld	iy,ImageData
+			ld	(iy+0),b		; save pos y
+			ld	(iy+1),c		; save pos x
+			ld	a,(de) : inc de
+			ld	(iy+3),a		; save width
+			ld	a,(de) : inc de
+			ld	(iy+2),a		; save height
+			ld	c,0			; get image height
+			ld	b,a
+@loop:	; bc= image height, de = image src
+			push	bc			; save remaining height
+			ld	b,(iy+0)		; current y pos
+			ld	c,(iy+1)		; current x pos
+			call	GetPixelAddress		; IN BC = YX pos, out HL = banked screen address
+			ex	de,hl			; DE now equals screen addr, HL current image source addr
+			ld	c,(iy+3)		; get image width
+			ld	b,0
+			ldir				; LDI: (DE)<-(HL) DE<-DE+1: HL<-HL+1: BC<-BC-1
+			;call	DMACopy			; In: HL = Src, DE = Dest, BC = size TODO change to use dma
+			ex	de,hl			; HL now equals broken screen addr, DE correct current image source addr
+			ld	a,(iy+0)		; y pos
+			inc	a			; next pos
+			ld	(iy+0),a		; save next y pos
+			pop	bc
+			djnz	@loop
+			pop	iy
+			ret
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; void _Render1Bpp(uint8 x, uint8 y, uint16 col, uint8* oneBpp) {
 ;	uint8 xpos = x + *oneBpp++;

@@ -147,6 +147,7 @@ extern uint8	Load(char* pName, uint16 bank, uint16 offset) __z88dk_callee __pres
 extern uint16	ReadNextReg(uint16 reg) __z88dk_callee __preserves_regs(iyl,iyh);
 
 extern void BlitTransImage(uint8 x, uint8 y, uint16 transCol, uint8* imageSrc) __z88dk_callee __preserves_regs(iyl,iyh);
+extern void Render(uint8 x, uint8 y, uint8* imageSrc) __z88dk_callee __preserves_regs(iyl,iyh);
 extern void Render1Bpp(uint8 x, uint8 y, uint16 col, uint8* oneBpp) __z88dk_callee __preserves_regs(iyl,iyh);
 
 
