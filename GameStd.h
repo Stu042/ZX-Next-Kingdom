@@ -7,7 +7,7 @@
 
 
 #define EDIT_VALUE_BUF_SIZE (16)
-
+#define Frac (256)
 
 
 
@@ -38,7 +38,7 @@ extern const uint8 valCol;
 extern const uint8 valHighlightCol;
 extern const uint8 valColLarge;
 extern const uint8 valColLow;
-
+extern const uint8 valDebugCol;
 
 
 /////////////////////
@@ -72,11 +72,5 @@ extern void PrintEditValues(EditValue editFields[], uint8 count);
 extern int EditValueCalcTotal(EditValue editFields[], int8 count);
 
 
-/// Returns random number starts at From and ends at To - 1 (inclusive)
-extern int32 rndRange(int32 from, int32 to);
-extern int32 rndPerc(int32 val, int32 perc);
-extern int32 max(int32 val, int32 max);
-extern int32 min(int32 val, int32 min);
-extern int32 clamp(int32 val, int32 min, int32 max);
 
 #endif

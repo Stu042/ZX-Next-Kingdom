@@ -8,14 +8,16 @@
 
 
 
-const uint8 StdTextColour = 0;
+const uint8 StdTextColour = 68;
 const uint8 LoLightTextColour = 68;
 
 
-const uint8 valCol = 0;
+const uint8 valCol = 68;
 const uint8 valHighlightCol = 252;
 const uint8 valColLarge = 224;
 const uint8 valColLow = 252;
+
+const uint8 valDebugCol = 252;
 
 
 char buf[EDIT_VALUE_BUF_SIZE];
@@ -159,47 +161,3 @@ int EditValueCalcTotal(EditValue editFields[], int8 count) {
 }
 
 
-
-
-/// Returns random number starts at From and ends at To - 1 (inclusive)
-int32 rndRange(int32 from, int32 to) {
-	int32 diff = to - from;
-	if (diff <= 0) {
-		return from;
-	}
-	return (((int32)XorShift()) % diff) + from;
-}
-
-
-int32 rndPerc(int32 val, int32 perc) {
-	if (perc <= 0) {
-		return 0;
-	}
-	int32 result = rndRange(0, (val * perc + 1) / 100);
-	return result;
-}
-
-
-int32 max(int32 val, int32 max) {
-	if (val < max) {
-		val = max;
-	}
-	return val;
-}
-
-int32 min(int32 val, int32 min) {
-	if (val > min) {
-		val = min;
-	}
-	return val;
-}
-
-
-int32 clamp(int32 val, int32 min, int32 max) {
-	if (val > max) {
-		val = max;
-	} else if (val < min) {
-		val = min;
-	}
-	return val;
-}

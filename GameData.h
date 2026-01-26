@@ -48,7 +48,7 @@ extern int32 DeathsNatural;
 extern int32 DeathsStarvation;
 extern int32 DeathsDefending;
  
-extern int32 GrainsStolen;
+extern int32 GrainStolen;
 extern int32 GrainGrown;
 extern int32 GrainFlooded;
 extern int32 GrainIncrease;

@@ -833,14 +833,127 @@ PrintCol:	db 0
 _XorShiftRndSeed:
 XorShiftRndSeed:
 			ld	a,r
-			ld	l,a
-			ld	a,r
-			ld	h,a
-			add	hl,$7237
-			ld	(RndSeed),hl
+			ld	(RndSeed),a
+			xor	$77
+			ld	(RndSeed+1),a
 			ret
 
 RndSeed:	dw 1
+
+
+; ******************************************************************************
+; uint32 XorShift()
+;
+; The state must be initialized to non-zero
+; uint32_t xorshift32(struct xorshift32_state *state)
+; {
+; 	/* Algorithm "xor" from p. 4 of Marsaglia, "Xorshift RNGs" */
+; 	uint32_t x = state->a;
+; 	x ^= x << 13;
+; 	x ^= x >> 17;
+; 	x ^= x << 5;
+; 	return state->a = x;
+; }
+; D                         E                         H                         L
+; 31 30 29 28 27 26 25 24   23 22 21 20 19 18 17 16   15 14 13 12 11 10 09 08   07 06 05 04 03 02 01 00
+	PUBLIC _XorShift32, XorShift32
+_XorShift32:
+; ******************************************************************************
+; XorShift
+; Return a random number in HL.
+XorShift32:
+			push	ix
+			ld	ix,RndSeed32
+			ld	de,(RndSeed32)
+			ld	hl,(RndSeed32 + 2)
+
+			; x << 13			; 18 17 16   15 14 13 12 11 10 09 08   07 06 05 04 03 02 01 00 0000000000000
+			ld	b,3
+			xor	a
+@firstLoop:
+			srl	e
+			rr	h
+			rr	l
+			rra
+			djnz	@firstLoop
+			; HLA0 = x << 13
+			
+			ld	d,h
+			ld	e,l
+			ld	h,a
+			ld	l,0
+			call	@XorDEHL		; save dehl
+			; x >> 17;
+			ld	de,(RndSeed32)
+			ld	hl,(RndSeed32 + 2)
+
+			srl	d
+			rr	e
+			ld	l,e
+			ld	h,d
+			xor	a
+			ld	d,a
+			ld	e,a
+			call	@XorDEHL		; save dehl
+			; x << 5;
+			ld	de,(RndSeed32)
+			ld	hl,(RndSeed32 + 2)
+			ld	b,3
+			xor	a
+@secondLoop:
+			srl	d
+			rr	e
+			rr	h
+			rr	l
+			rra
+			djnz	@secondLoop
+			ld	d,e
+			ld	e,h
+			ld	h,l
+			ld	l,a
+			call	@XorDEHL		; save dehl
+			ld	de,(RndSeed32)
+			ld	hl,(RndSeed32 + 2)
+			pop	ix
+			dec	hl
+			ret	nc
+			dec	de
+			ret
+		;  E D L H
+;WipRnd32:	db 0,1,2,3
+
+@XorDEHL:
+			ld	a,l
+			xor	(ix + 2)
+			ld	(RndSeed32 + 2),a
+			ld	a,h
+			xor	(ix + 3)
+			ld	(RndSeed32 + 3),a
+			ld	a,e
+			xor	(ix + 0)
+			ld	(RndSeed32),a
+			ld	a,d
+			xor	(ix + 1)
+			ld	(RndSeed32 + 1),a
+			ret
+
+; ******************************************************************************
+; Seeds XorShift with a random value, taken from R
+; ******************************************************************************
+	PUBLIC _XorShiftRndSeed32, XorShiftRndSeed32
+_XorShiftRndSeed32:
+XorShiftRndSeed32:
+			ld	a,r
+			ld	(RndSeed32),a
+			xor	$77
+			ld	(RndSeed32+1),a
+			xor	$97
+			ld	(RndSeed32+2),a
+			xor	$13
+			ld	(RndSeed32+3),a
+			ret
+		;  E D L H
+RndSeed32:	db 0,1,2,3
 
 
 ; ******************************************************************************

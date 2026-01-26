@@ -170,4 +170,18 @@ extern uint16 XorShift(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 extern void SaveGame(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 
 
+/// Returns random number starts at From and ends at To - 1 (inclusive)
+extern uint16 rndRange(uint16 from, uint16 to);
+extern uint16 rndPerc(uint16 val, uint16 perc);
+extern int32 max(int32 val, int32 max);
+extern int32 min(int32 val, int32 min);
+extern int32 clamp(int32 val, int32 min, int32 max);
+
+extern uint32 XorShift32(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
+extern void XorShiftRndSeed32(void) __z88dk_fastcall __preserves_regs(b, c, d, e, h, l, iyl,iyh);
+
+/// Returns random number starts at From and ends at To (inclusive)
+extern uint32 rndRange32(uint32 from, uint32 to);
+extern uint32 rndPerc32(uint32 val, uint32 perc);
+
 #endif	//__KERNEL_H__

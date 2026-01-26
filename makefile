@@ -11,7 +11,7 @@ LIBS=-lm
 OBJS =	obj/main.o obj/data.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
 	obj/FrontEnd.o obj/FrontEndAsm.o obj/GameData.o \
 	obj/GamePlay.o obj/GamePlayAsm.o obj/GamePlayAssignResources.o \
-	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYear.o \
+	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYearDo.o obj/GameSimYearRender.o \
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
 	obj/NewBorn.o obj/GrainBundle.o obj/KingdomState.o obj/Starved.o \
 	obj/Scroll.o obj/Flood.o obj/Reclaimed.o obj/Population.o obj/LandPic.o \
@@ -72,8 +72,12 @@ obj/GameGrain.o: GameGrain.c FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameGrain.o GameGrain.c
 
 # Game Play, input grain assignement
-obj/GameSimYear.o: GameSimYear.c FrameWork.h Kernel.h
-	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameSimYear.o GameSimYear.c
+obj/GameSimYearDo.o: GameSimYearDo.c FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameSimYearDo.o GameSimYearDo.c
+
+# Game Play, input grain assignement
+obj/GameSimYearRender.o: GameSimYearRender.c FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameSimYearRender.o GameSimYearRender.c
 
 
 

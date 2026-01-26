@@ -152,3 +152,64 @@ void HangForKey(void) {
 	}
 }
 
+
+
+
+
+/// Returns random number starts at From and ends at To (inclusive)
+uint16 rndRange(uint16 from, uint16 to) {
+	if (from >= to) {
+		return from;
+	}
+	uint32 diff = to - from;
+	return ((XorShift()) % (diff+1)) + from;
+}
+
+
+uint16 rndPerc(uint16 val, uint16 perc) {
+	if (perc <= 0) {
+		return 0;
+	}
+	int32 result = rndRange(0, (val * perc + 1) / 100);
+	return result;
+}
+
+/// Returns random number starts at From and ends at To (inclusive)
+uint32 rndRange32(uint32 from, uint32 to) {
+	if (from >= to) {
+		return from;
+	}
+	uint16 diff = to - from;
+	return ((XorShift32()) % (diff+1)) + from;
+}
+
+
+uint32 rndPerc32(uint32 val, uint32 perc) {
+	uint32 result = rndRange32(0, (val * perc + 1) / 100);
+	return result;
+}
+
+
+int32 max(int32 val, int32 max) {
+	if (val < max) {
+		val = max;
+	}
+	return val;
+}
+
+int32 min(int32 val, int32 min) {
+	if (val > min) {
+		val = min;
+	}
+	return val;
+}
+
+
+int32 clamp(int32 val, int32 min, int32 max) {
+	if (val > max) {
+		val = max;
+	} else if (val < min) {
+		val = min;
+	}
+	return val;
+}

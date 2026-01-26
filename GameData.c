@@ -43,7 +43,7 @@ int32 DeathsNatural;
 int32 DeathsStarvation;
 int32 DeathsDefending;
 
-int32 GrainsStolen;
+int32 GrainStolen;
 int32 GrainGrown;
 int32 GrainFlooded;
 int32 GrainIncrease;

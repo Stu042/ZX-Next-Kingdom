@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h> // standard names for ints with no ambiguity
 #include <z80.h>
+#include <stdlib.h>
 
 #include "FrameWork.h"
 #include "FrontEnd.h"
@@ -165,7 +166,7 @@ int main(void) {
 	InitKernel();
 	SetUpIRQs();
 	XorShiftRndSeed();
-
+	XorShiftRndSeed32();
 	InitL2();
 	Border(INK_BLACK);
 	ClsL2(0);

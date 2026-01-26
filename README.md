@@ -1,4 +1,4 @@
-# Kingom
+# Kingdom
 
 ### A resource management game for the ZX Spectrum Next.
 
@@ -30,7 +30,7 @@ Here the yellow cursor is on the top item, "Working Fields". Type in a number to
 
 You have 20 Population at the moment so don't try to assign more than that in total.
 
-When you press Enter on the bottom item we will go to the next resource to assign.
+When you press Enter on the bottom item the page will go to the next resource to assign.
 
 ![Population resource](docs/FirstPage.png)
 
