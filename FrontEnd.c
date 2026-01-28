@@ -93,7 +93,7 @@ void FE_NewGame(void) {
 	Population = 20;
 	LandSize = 10;
 	DykeStateFrac = Frac * 2;
-	BanditCount = 10;
+	BanditCount = 5;
 	BanditHealthFrac = Frac / 2;
 }
 

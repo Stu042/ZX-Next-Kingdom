@@ -1,4 +1,5 @@
 #include <arch/zxn.h>           // ZX Spectrum Next architecture specfic functions
+#include <stdarg.h>
 #include <stdint.h>             // standard names for ints with no ambiguity 
 #include <z80.h>
 #include <im2.h>
@@ -72,6 +73,7 @@ void PrintPropCentre(uint8 y, uint8 col, char *text) {
 	uint8 xpos = CentreText(text);
 	PrintProp(xpos, y, col, text);
 }
+
 
 static bool chkDelete(char* buf, int usedBufSize) {
 	if (DebounceKeys[VK_CAPS] != 0 && DebounceKeys[VK_0] != 0) {

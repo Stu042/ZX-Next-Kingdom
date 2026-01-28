@@ -46,3 +46,8 @@ You will see several screens with detail of each event with a summary page at th
 
 ![Food resource](docs/Result.png)
 
+
+## Continued work
+
+ - 2026/10/27 Work on dyke pic.
+ - 2026/01/28 Fixed issue where text would overspill display, if grain decreased, was flooded and was stolen. Added check to print to prevent printing off the bottom of the screen.

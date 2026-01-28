@@ -17,8 +17,16 @@
 
 
 #define GSY_TEXT_TOP (128)
-#define GSY_TEXTY(offset) ((uint8)(GSY_TEXT_TOP + (offset) * 8))
-
+#ifdef DEBUG
+	uint8 GSY_TEXTY(uint8 offset) {
+		if (((uint8)(GSY_TEXT_TOP + (offset) * 8)) > (192 - 8)) {
+			Border(INK_RED);	// warn if we try to print off screen
+		}
+		return ((uint8)(GSY_TEXT_TOP + (offset) * 8));
+	}
+#else
+	#define GSY_TEXTY(offset) ((uint8)(GSY_TEXT_TOP + (offset) * 8))
+#endif
 
 
 static int8 picIndex;
@@ -146,12 +154,14 @@ static void showGrainChange(void) {
 			PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain lost ", GrainFlooded);
 		}
 		if (GrainStolen > 0) {
-			PrintProp(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "The bandits stole some of our grain.");
-			PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain stolen ", GrainStolen);
+			char banditsStoleTxt[] = "The bandits stole some of our grain.";
+			uint8 banditsStoleTxtLen = PropPixelLength(banditsStoleTxt);
+			PrintProp(LeftSideMargin, GSY_TEXTY(y), StdTextColour, banditsStoleTxt);
+			PrintSimpleValue(LeftSideMargin + banditsStoleTxtLen, GSY_TEXTY(y++), StdTextColour, "Grain stolen ", GrainStolen);
 		}
 		PrintProp(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "We consumed more grain than we produced.");
 		PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain decrease ", GrainIncrease * -1);
-		PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain: ", Grains);
+		PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain ", Grains);
 	} else if (GrainIncrease == 0) {
 		if (GrainPlanted > 0) {
 			PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain planted ", GrainPlanted);

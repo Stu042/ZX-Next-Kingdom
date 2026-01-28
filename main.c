@@ -157,9 +157,9 @@ void MainLoop(void) {
 int main(void) {
 	intrinsic_label(Main_Label);
 	SetCpu14Mhz();
-	NextReg(0x8, 0x4A);	// Disable RAM contention, enable DAC and turbosound
+	NextReg(0x08, 8 + 2);	// 8=Enable 8-bit DACs (A,B,C,D), 2=Enable Turbosound
 	//NextReg(0x5, 0x04);	// 60Hz mode
-	NextReg(0x15, 0x21);	// Enable sprites and clipping, SLU priority
+	NextReg(0x15, 32 + 1);	// 32=clipping works even in "over border" mode, 1 = Enable sprite visibility, SLU (Sprites are at top, Layer 2 under, Enhanced_ULA at bottom)
 	NextReg(0x4b, 0xe3);	// sprite transparency
 	SetTransparencyColourFallback(0xe3);
 	BankKernel();		// page in kernel

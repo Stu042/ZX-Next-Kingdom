@@ -3,7 +3,7 @@
 
 #pragma output CRT_ORG_CODE = 0x2000
 
-char Version[8] = "0.1";
+char Version[8] = "0.1.001";
 
 eGameState GameState;
 
@@ -57,3 +57,5 @@ int32 LandReclaimed;
 int32 LandIncrease;
 
 int32 BanditsKilled;
+
+uint8 unused[128];

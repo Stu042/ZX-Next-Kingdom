@@ -1051,6 +1051,9 @@ _PrintProp:
 PrintProp:
 			ld	(PrintCol),a
 @NextChar:
+			ld	a,b
+			cmp	191
+			ret	nc
 			ld	(CharPosition),bc
 			ld	a,(hl)			; A = ascii character
 			and	a

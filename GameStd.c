@@ -34,7 +34,7 @@ void PrintMainResources(void) {
 
 	PrintValue(LeftSideMargin, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
 	PrintValue(LeftSideMargin, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
-	PrintValue(LeftSideMargin, 80, stdTopTextPos(24), StdTextColour, "Grains", Grains);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(24), StdTextColour, "Grain", Grains);
 
 	ltoa(UsedPop, buf, 10);
 	PrintResourceValue(160, stdTopTextPos(8), Population, UsedPop, buf);
