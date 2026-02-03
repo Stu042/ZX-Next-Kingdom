@@ -11,3 +11,5 @@ build/
 .tmp/**
 **.list
 obj/
+cspect_win.dat
+.tmp/disasm.list

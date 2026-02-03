@@ -70,6 +70,41 @@
 #define VK_NUM_KEYS	40
 
 
+typedef enum ESX_DOS_ERROR {
+	ESX_Ok = 256,
+	ESX_Eok = 257,
+	ESX_Nonsense = 258,
+	ESX_Stend = 3 + 256,
+	ESX_Wrtype = 4 + 256,
+	ESX_Noent = 5 + 256,
+	ESX_Io = 6 + 256,
+	ESX_Inval = 7 + 256,
+	ESX_Acces = 8 + 256,
+	ESX_Nospc = 9 + 256,
+	ESX_Nxio = 10 + 256,
+	ESX_Nodrv = 11 + 256,
+	ESX_Nfile = 12 + 256,
+	ESX_Badf = 13 + 256,
+	ESX_Nodev = 14 + 256,
+	ESX_Overflow = 15 + 256,
+	ESX_Isdir = 16 + 256,
+	ESX_Notdir = 17 + 256,
+	ESX_Exist = 18 + 256,
+	ESX_Path = 19 + 256,
+	ESX_Sys = 20 + 256,
+	ESX_Nametoolong = 21 + 256,
+	ESX_Nocmd = 22 + 256,
+	ESX_Inuse = 23 + 256,
+	ESX_Rdonly = 24 + 256,
+	ESX_Verify = 25 + 256,
+	ESX_Loadingko = 26 + 256,
+	ESX_Dirinuse = 27 + 256,
+	ESX_Mapramactive = 28 + 256,
+	ESX_Drivebusy = 29 + 256,
+	ESX_Fsunknown = 30 + 256,
+	ESX_Devicebusy = 31 + 256,
+}EsxDosError;
+
 
 /////////////////////
 // Global variables
@@ -167,7 +202,6 @@ extern void XorShiftRndSeed(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 #define MAX_XOR_SHIFT (65534)
 extern uint16 XorShift(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 
-extern void SaveGame(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 
 
 /// Returns random number starts at From and ends at To - 1 (inclusive)
@@ -183,5 +217,28 @@ extern void XorShiftRndSeed32(void) __z88dk_fastcall __preserves_regs(b, c, d, e
 /// Returns random number starts at From and ends at To (inclusive)
 extern uint32 rndRange32(uint32 from, uint32 to);
 extern uint32 rndPerc32(uint32 val, uint32 perc);
+
+
+// //////////////////////////////////////////////////////
+// File system functions
+
+extern char **SaveGameErrorMsgPtr;
+extern uint8 SaveGame(uint8 *start, uint16 length) __z88dk_callee;
+
+// Set drive to default drive
+extern void GetSetDrive(void) __z88dk_fastcall;
+
+// Return EsxDosError error or file handle
+extern EsxDosError OpenSaveGame(void) __z88dk_fastcall __preserves_regs(b, c, d, e, iyl,iyh);
+
+// Return EsxDosError error code
+extern EsxDosError CloseSaveGame(EsxDosError fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
+
+// Return EsxDosError error code
+extern EsxDosError SyncSaveGame(EsxDosError fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
+
+// Write data from addr of size length to valid filehandle
+extern uint16 WriteSaveGame(EsxDosError fileHandle, uint8* addr, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+
 
 #endif	//__KERNEL_H__

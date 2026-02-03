@@ -36,6 +36,7 @@
         defc M_GETSETDRV                = $89
         defc F_OPEN                     = $9a
         defc F_CLOSE                    = $9b
+        defc F_SYNC                     = $9c
         defc F_READ                     = $9d
         defc F_WRITE                    = $9e
         defc F_SEEK                     = $9f
@@ -44,9 +45,52 @@
         defc FA_APPEND                  = $06
         defc FA_OVERWRITE               = $0C
 
+	defc ESX_MODE_READ		= $01
+	defc ESX_MODE_WRITE		= $02
+	defc ESX_MODE_USE_HEADER	= $40
+	defc ESX_MODE_OPEN_EXIST	= $00
+	defc ESX_MODE_OPEN_CREATE	= $08
+	defc ESX_MODE_CREATE_NOEXIST	= $04
+	defc ESX_MODE_CREATE_TRUNC	= $0c
+
         defc MAX_FILENAME_LEN           = 64                    ; includes ,0 at the end
         defc LOADING_BANK               = $56                   ; the MMU register we're using
         defc LOADING_BASE_ADD           = $c000                 ; base of bank we'll be loading into
+
+	; esxDOS-compatible error codes
+	;------------------------------------------------------
+	; Unknown error			; 0, esx_ok
+	; OK				; 1, esx_eok
+	; Nonsense in esxDOS		; 2, esx_nonsense
+	; Statement end error		; 3, esx_estend
+	; Wrong file type		; 4, esx_ewrtype
+	; No such file or dir		; 5, esx_enoent
+	; I/O error			; 6, esx_eio
+	; Invalid filename		; 7, esx_einval
+	; Access denied			; 8, esx_eacces
+	; Drive full			; 9, esx_enospc
+	; Invalid i/o request		; 10, esx_enxio
+	; No such drive			; 11, esx_enodrv
+	; Too many files open		; 12, esx_enfile
+	; Bad file number		; 13, esx_ebadf
+	; No such device		; 14, esx_enodev
+	; File pointer overflow		; 15, esx_eoverflow
+	; Is a directory		; 16, esx_eisdir
+	; Not a directory		; 17, esx_enotdir
+	; Already exists		; 18, esx_eexist
+	; Invalid path			; 19, esx_epath
+	; Missing system		; 20, esx_esys
+	; Path too long			; 21, esx_enametoolong
+	; No such command		; 22, esx_enocmd
+	; In use			; 23, esx_einuse
+	; Read only			; 24, esx_erdonly
+	; Verify failed			; 25, esx_everify
+	; Sys file load error		; 26, esx_eloadingko
+	; Directory in use		; 27, esx_edirinuse
+	; MAPRAM is active		; 28, esx_emapramactive
+	; Drive busy			; 29, esx_edrivebusy
+	; Unknown filesystem		; 30, esx_efsunknown
+	; Device busy			; 31, esx_edevicebusy
 
 
 	; half row 1

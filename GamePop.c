@@ -3,7 +3,7 @@
 #include "Kernel.h"
 #include "GamePop.h"
 #include "GameStd.h"
-#include "GameData.h"
+#include "data.h"
 #include "pics/Pics.h"
 
 
@@ -29,9 +29,9 @@ static char UsedPopStr[EDIT_VALUE_BUF_SIZE];
 
 #define POP_FIELDS_COUNT (3)
 static EditValue editFields[POP_FIELDS_COUNT] = {
-	{80, LeftSideMargin, popTopTextPos(32), true,"Working Fields", PopInFieldsStr, &PopInFields, &Population},
-	{80, LeftSideMargin, popTopTextPos(40), false,"Working Wall",PopOnWallStr, &PopOnWall, &Population},
-	{80, LeftSideMargin, popTopTextPos(48), false,"Defending",PopDefendingStr, &PopDefending, &Population},
+	{80, LeftSideMargin, popTopTextPos(32), true,"Working Fields", PopInFieldsStr, &Data.PopInFields, &Data.Population},
+	{80, LeftSideMargin, popTopTextPos(40), false,"Working Wall",PopOnWallStr, &Data.PopOnWall, &Data.Population},
+	{80, LeftSideMargin, popTopTextPos(48), false,"Defending",PopDefendingStr, &Data.PopDefending, &Data.Population},
 };
 
 static uint8 editFieldsPics[POP_FIELDS_COUNT] = {
@@ -62,17 +62,17 @@ static void updatePic(void);
 
 
 void GamePopInit(void) {
-	UsedGrain = 0;	// set to zero as print resources also prints this value
+	Data.UsedGrain = 0;	// set to zero as print resources also prints this value
 
 	popIndex = 0;
 	oldIndex = -1;
 	PopInFieldsStr[0] = 0;
 	PopOnWallStr[0] = 0;
 	PopDefendingStr[0] = 0;
-	PopInFields = 0;
-	PopOnWall = 0;
-	PopDefending = 0;
-	UsedPop = 0;
+	Data.PopInFields = 0;
+	Data.PopOnWall = 0;
+	Data.PopDefending = 0;
+	Data.UsedPop = 0;
 	UsedPopStr[0] = 0;
 	popErrorStr = NULL;
 	finished = false;
@@ -91,7 +91,7 @@ bool GamePopRun(void) {
 
 
 bool GamePopValidate(void) {
-	if (UsedPop <= Population) {
+	if (Data.UsedPop <= Data.Population) {
 		return true;
 	}
 	popErrorStr = popErrorTooManyStr;
@@ -106,8 +106,8 @@ bool GamePopValidate(void) {
 
 static void input(void) {
 	finished = KeyedInput(editFields, &popIndex, POP_FIELDS_COUNT);
-	UsedPop = EditValueCalcTotal(editFields, POP_FIELDS_COUNT);
-	ltoa(UsedPop, UsedPopStr, 10);
+	Data.UsedPop = EditValueCalcTotal(editFields, POP_FIELDS_COUNT);
+	ltoa(Data.UsedPop, UsedPopStr, 10);
 	if (finished) {
 		SetState(State_PopValidate);
 	}
@@ -125,7 +125,7 @@ static void render(void) {
 	//ClsLast2(0);
 	BlitLargeImageAt(128, ScrollPic, ScrollImageSize);
 	PrintMainResources();
-	PrintResourceValue(160, popTopTextPos(8), Population, UsedPop, UsedPopStr);
+	PrintResourceValue(160, popTopTextPos(8), Data.Population, Data.UsedPop, UsedPopStr);
 	PrintEditValues(editFields, POP_FIELDS_COUNT);
 	if(popErrorStr) {
 		PrintProp(10, popTopTextPos(56), StdTextColour, popErrorStr);
@@ -142,6 +142,5 @@ static void updatePic(void) {
 	if (editFieldsPics[popIndex] != 0) {
 		DoubleBlitLargeImage(editFieldsPics[popIndex], LargeImageSize);
 	}
-	BankGameData();
 }
 

@@ -8,8 +8,8 @@ LIBS=-lm
 
 
 
-OBJS =	obj/main.o obj/data.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
-	obj/FrontEnd.o obj/FrontEndAsm.o obj/GameData.o \
+OBJS =	obj/main.o obj/data.o obj/data_asm.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
+	obj/FrontEnd.o obj/FrontEndAsm.o \
 	obj/GamePlay.o obj/GamePlayAsm.o obj/GamePlayAssignResources.o \
 	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYearDo.o obj/GameSimYearRender.o \
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
@@ -23,11 +23,14 @@ kingdom.nex: $(OBJS)
 
 
 # Main program at $8000
-obj/main.o: 	main.c FrameWork.h Kernel.h FrontEnd.h GamePlay.h
-		$(CC) $(CFLAGS) -o obj/main.o main.c
+obj/main.o: 		main.c FrameWork.h Kernel.h FrontEnd.h GamePlay.h
+			$(CC) $(CFLAGS) -o obj/main.o main.c
 
-obj/data.o: 	data.c FrameWork.h Kernel.h
-		$(CC) $(CFLAGS) -o obj/data.o data.c
+obj/data.o:		data.c FrameWork.h Kernel.h
+			$(CC) $(CFLAGS) -o obj/data.o data.c
+
+obj/data_asm.o: 	data_asm.asm
+			$(CC) $(CFLAGS) -o obj/data_asm.o data_asm.asm
 
 
 # Kernel section
@@ -45,10 +48,6 @@ obj/FrontEnd.o: FrontEnd.c FrontEnd.h FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_08_FRONTEND_SEG --constsegPAGE_08_FRONTEND_SEG -o obj/FrontEnd.o FrontEnd.c 
 obj/FrontEndAsm.o: FrontEndAsm.asm
 	$(CC) $(CFLAGS) --codesegPAGE_08_FRONTEND_SEG --constsegPAGE_08_FRONTEND_SEG -o obj/FrontEndAsm.o FrontEndAsm.asm
-
-# Game Data, used by Front End and Game Play
-obj/GameData.o: GameData.c GameData.h
-	$(CC) $(CFLAGS) --codesegPAGE_01_GAMEDATA_SEG --constsegPAGE_01_GAMEDATA_SEG -o obj/GameData.o GameData.c
 
 
 # Game Play overlay
@@ -144,5 +143,6 @@ clean:
 	rm -f *.bin
 	rm -f *.nex
 	rm -f *.map
+	rm -f pics/*.lis
 
 

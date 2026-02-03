@@ -3,7 +3,7 @@
 #include "Kernel.h"
 #include "GameGrain.h"
 #include "GameStd.h"
-#include "GameData.h"
+#include "data.h"
 #include "pics/Pics.h"
 
 
@@ -32,8 +32,8 @@ static char* grainErrorStr;
 
 #define GRAIN_FIELDS_COUNT (2)
 static EditValue editFields[GRAIN_FIELDS_COUNT] = {
-	{80, LeftSideMargin, grainTopTextPos(32), true,"To Eat", GrainAteStr, &GrainAte, &Grains},
-	{80, LeftSideMargin, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &GrainPlanted, &Grains}
+	{80, LeftSideMargin, grainTopTextPos(32), true,"To Eat", GrainAteStr, &Data.GrainAte, &Data.Grains},
+	{80, LeftSideMargin, grainTopTextPos(40), false, "To Plant",GrainPlantedStr, &Data.GrainPlanted, &Data.Grains}
 };
 
 static uint8 editFieldsPics[GRAIN_FIELDS_COUNT] = {
@@ -65,9 +65,9 @@ void GameGrainInit(void) {
 	GrainAteStr[0] = 0;
 	GrainPlantedStr[0] = 0;
 	UsedGrainStr[0] = 0;
-	GrainAte = 0;
-	GrainPlanted = 0;
-	UsedGrain = 0;
+	Data.GrainAte = 0;
+	Data.GrainPlanted = 0;
+	Data.UsedGrain = 0;
 	grainErrorStr = NULL;
 	finished = false;
 	ClsL2(0);
@@ -87,7 +87,7 @@ bool GameGrainRun(void) {
 
 
 bool GameGrainValidate(void) {
-	if (UsedGrain <= Grains) {
+	if (Data.UsedGrain <= Data.Grains) {
 		return true;
 	} else {	// show error
 		grainErrorStr = grainErrorTooManyStr;
@@ -103,8 +103,8 @@ bool GameGrainValidate(void) {
 static void input(void) {
 	int8 oldIndex = grainIndex;
 	finished = KeyedInput(editFields, &grainIndex, GRAIN_FIELDS_COUNT);
-	UsedGrain = EditValueCalcTotal(editFields, GRAIN_FIELDS_COUNT);
-	ltoa(UsedGrain, UsedGrainStr, 10);
+	Data.UsedGrain = EditValueCalcTotal(editFields, GRAIN_FIELDS_COUNT);
+	ltoa(Data.UsedGrain, UsedGrainStr, 10);
 	if (finished) {
 		SetState(State_GrainValidate);
 	}
@@ -122,7 +122,7 @@ static void render(void) {
 	BlitLargeImageAt(128, ScrollPic, ScrollImageSize);
 	//ClsLast2(0);
 	PrintMainResources();
-	PrintResourceValue(160, grainTopTextPos(24), Grains, UsedGrain, UsedGrainStr);
+	PrintResourceValue(160, grainTopTextPos(24), Data.Grains, Data.UsedGrain, UsedGrainStr);
 	PrintEditValues(editFields, GRAIN_FIELDS_COUNT);
 	if(grainErrorStr) {
 		PrintProp(10, grainTopTextPos(48), StdTextColour, grainErrorStr);
@@ -139,6 +139,5 @@ static void updatePic(void) {
 	if (editFieldsPics[grainIndex] != 0) {
 		DoubleBlitLargeImage(editFieldsPics[grainIndex], LargeImageSize);
 	}
-	BankGameData();
 }
 

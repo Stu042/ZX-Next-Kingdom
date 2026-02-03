@@ -1,0 +1,270 @@
+Main Menu
+Smart load
+Snapshot
+Machine
+Audio
+Display
+Storage
+Debug
+Network
+Windows
+Settings
+Search menu
+Procrastinate
+Help
+ESC Close menu
+F10 Exit ZEsarUX
+
+Main Menu-> Machine
+--- Select manufacturer ---
+Amstrad
+Ascii Corp
+Cambridge Computers
+Chloe Corporation
+Coleco Industries
+Czerweny Electronica
+Investronica
+Jupiter Cantab
+Mario Prato
+Microdigital Eletronica
+Miles Gordon Technology
+NedoPC
+New Horizons
+Next Team
+Pentagon
+Science of Cambridge
+Sega
+Sinclair Research
+Spectravideo Intl
+Timex Computer
+Timex Sinclair
+TS Labs
+ZXUno Team
+    List type [Manufacturer]
+[ ] Custom rom
+Hotswap machine
+ESC Close
+
+Main Menu-> Audio
+Audio Chip Registers
+Audio Chip Piano
+Audio Chip Sheet
+Audio Chip Info
+Spectrum Next DAC
+Wave Piano
+Waveform
+AY Player
+--- External Audio Source ---
+[ ] Enable External Audio Source
+AY Mixer
+Audio Chip to .mid
+ESC Close
+
+Main Menu-> Audio Menu-> AY mixer
+[X] AY Envelopes
+[X] AY Speech
+[X] AY MIDI registers
+    AY Stereo: Mono
+---Chip 1---
+[No filter] Channel A
+[No filter] Channel B
+[No filter] Channel C
+---Chip 2---
+[No filter] Channel A
+[No filter] Channel B
+[No filter] Channel C
+---Chip 3---
+[No filter] Channel A
+[No filter] Channel B
+[No filter] Channel C
+ESC Close
+
+Main Menu-> Settings
+Accessibility
+Audio
+Configuration file
+Danger Zone
+Debug
+External tools paths
+File Browser
+Function keys
+General
+Hardware
+Main Window
+Network
+OSD
+Snapshot
+Statistics
+Storage
+TV
+Video
+ZX Desktop
+ZX Vision
+[X] Advanced menu items
+ESC Close
+
+Main Menu-> Settings Menu-> Storage Settings
+[X] Autoload medium
+[ ] Fast autoload
+[X] Autoselect medium opts
+[ ] Accelerate load
+[ ] Accelerate save
+Tape
+ESC Close
+
+Main Menu-> Display
+Load Screen
+Save Screen
+Quicksave Screen
+View Screen
+Video Output
+View Colour Palettes
+On Screen Keyboard
+Text Adventure Tools
+ESC Close
+
+Main Menu-> Storage
+Tape
+Betadisk
+ESXDOS Handler
+HiLow Data Drive
+IDE
+iFrom
+Kartusho
+LEC memory
+SD/MMC
+ZX Dandanator
+ZXMMC+
+Copy Interfaces
+ESC Close
+
+Main Menu-> Storage Menu-> ESXDOS handler
+[X] Enabled
+    Root dir: <e-Layer2-Kingdom
+[ ] Read only
+ESC Close
+
+Main Menu-> Machine menu-> Next Team
+ZX Spectrum Next
+ESC Close
+
+Main Menu-> Debug
+Reset
+Set PC=0
+Hard Reset
+Generate NMI
+Debug CPU
+Machine Info
+Load Source Code
+Load Symbol Table
+Debug DMA
+Debug I/O Ports
+Spectrum Next
+Debug console
+Hexadecimal Editor
+View Sensors
+View Sprites
+Visual memory
+Load binary block
+Save binary block
+File utilities
+Write message
+Shortcuts helper
+Ascii Table
+Basic
+CPU Transaction Log
+CPU Statistics
+Find
+Poke
+Input File Spooling
+ESC Close
+
+Main Menu-> Windows
+Process management
+Process switcher
+Trash Can
+Reduce all windows
+Minimize all windows
+Rearrange all windows
+Cascade all windows
+Maximize all windows
+Reduce+rearrange all windows
+Minimize+rearrange all windows
+Close all windows
+ESC Close
+
+Main Menu-> Snapshot
+Load snapshot
+Save snapshot
+Add note to next ZSF snapshot
+Quickload
+Quicksave
+Save autoconfig file
+Snapshots to RAM
+ESC Close
+
+SD/MMC
+--- Card 0 ---
+    MMC File [</emu/tbblue.mmc]
+    Autoconfigure Next SD
+[X] MMC Emulation
+[ ] Enable SDHC addressing
+[ ] Write protect
+[X] Persistent Writes
+    Reload MMC file
+    MMC Browser Card
+--- Card 1 ---
+    MMC File []
+[ ] Enable SDHC addressing
+[ ] Write protect
+[X] Persistent Writes
+[ ] DIVMMC paging
+[X] DIVMMC ports
+[ ] ZXMMC Enabled
+ESC Close
+
+Settings Menu-> Storage Settings
+[X] Autoload medium
+[X] Fast autoload
+[X] Autoselect medium opts
+[X] Accelerate load
+[X] Accelerate save
+Tape
+ESC Close
+
+Main Menu-> Settings-> Hardware
+    Emulated Joystick [Kempston]
+    Fire key 1 [Home]
+    Fire key 2 [None]
+    Fire key 3 [None]
+    Fire key 4 [None]
+[ ] Joystick Autofire
+    Joystick AutoLeftRight [50 Hz]
+[ ] Cheap Joystick
+[ ] Optical Input
+[ ] Kempston Mouse emulation
+[X] Datagear DMA emulation
+[ ] Dinamic SD1 emulation
+[X] Next fast boot mode
+[X] Next RTC traps
+    Next machine id [0A]
+    Next board id [00]
+    Next core version [3.2.1]
+    Emulator Speed [100%]
+CPU settings
+Keyboard settings
+Memory Settings
+Printing emulation
+Real joystick settings
+ULA settings
+ESC Close
+
+Settings Menu-> Hardware Settings-> ULA Settings
+    ULA timing [Early]
+[X] Contended memory
+[ ] ULA IM2 slow
+[ ] Pentagon timing
+    ULA Databus value [255]
+Advanced timing settings
+ESC Close
+

@@ -19,17 +19,17 @@
 #include "FrontEnd.h"
 #include "data.h"
 #include "GameStd.h"
-#include "GameData.h"
+#include "data.h"
 
 #pragma output CRT_ORG_CODE = 0x4000
 
 
 // internal protos
-static eGameState actionInput(void);
+static StartGameChoice actionInput(void);
 
 
 static char buf[32];
-static char madeBy[] = "Made By Stu v";
+static const char madeBy[] = "Made By Stu v";
 
 //  ***************************************************************************************
 //  Init the Front End system
@@ -37,39 +37,28 @@ static char madeBy[] = "Made By Stu v";
 //  ***************************************************************************************
 void FE_Init(void) {
 	Border(INK_BLACK);
-
 	ClsL2(0);
 	BlitTransImage(68,0, 227, kingdom);
-	
 	Render(190,20, RightBannerPic);
 	Render(10,20, LeftBannerPic);
-
 	PrintPropCentre(96, 240, "Any key to start game");
-	// PrintProp(90, 48, 240, "1. Continue Game");
-	// PrintProp(90, 64, 240, "2. New Game");
-	// PrintProp(90, 80, 240, "3. Load Game");
+	PrintProp(90, 48, 240, "1. Continue Game");
+	PrintProp(90, 64, 240, "2. New Game");
 	strcpy(buf, madeBy);
-	strcpy(&buf[strlen(madeBy)], Version);
+	strcpy(&buf[strlen(madeBy)], Data.Version);
 	PrintPropCentre(184, 4, buf);
-
 	VBlankSwap();
-	BankGameData();
 } 
+
 
 
 //  ***************************************************************************************
 //  Process the front end
 //  State_FrontEnd
 //  ***************************************************************************************
-eGameState FE_Run(void) {
-	DebounceReadKeyboard();
-	HangForKey();
-	return State_NewGame;
-	// eGameState choice;
-	// do {
-	// 	choice = actionInput();
-	// } while(choice == State_None);
-	// return choice;
+StartGameChoice FE_Run(void) {
+	StartGameChoice choice = actionInput();
+	return choice;
 }
 
 
@@ -78,7 +67,6 @@ eGameState FE_Run(void) {
 //  State_ContinueGame
 //  ***************************************************************************************
 void FE_ContinueGame(void) {	// TODO
-	BankGameData();
 }
 
 
@@ -87,14 +75,27 @@ void FE_ContinueGame(void) {	// TODO
 //  State_NewGame
 //  ***************************************************************************************
 void FE_NewGame(void) {
-	BankGameData();
-	Year = 0;
-	Grains = 100;
-	Population = 20;
-	LandSize = 10;
-	DykeStateFrac = Frac * 2;
-	BanditCount = 5;
-	BanditHealthFrac = Frac / 2;
+	Data.Year = 0;
+	Data.Grains = 100;
+	Data.Population = 20;
+	Data.LandSize = 10;
+	Data.DykeStateFrac = Frac * 2;
+	Data.BanditCount = 5;
+	Data.BanditHealthFrac = Frac / 2;
+
+	Data.TotalPopDied = 0;
+	Data.TotalPopKilled = 0;
+	Data.TotalPopStarved = 0;
+	Data.TotalPopDiedOldAge = 0;
+	Data.TotalPopBorn = 0;
+	Data.TotalBanditsKilled = 0;
+	Data.TotalGrainAte = 0;
+	Data.TotalGrainPlanted = 0;
+	Data.TotalGrainStolen = 0;
+	Data.TotalGrainGrown = 0;
+	Data.TotalGrainFlooded = 0;
+	Data.TotalLandFlooded = 0;
+	Data.TotalLandReclaimed = 0;
 }
 
 
@@ -103,7 +104,6 @@ void FE_NewGame(void) {
 //  State_ContinueGame
 //  ***************************************************************************************
 void FE_LoadGame(void) {	// TODO
-	BankGameData();
 }
 
 
@@ -121,17 +121,14 @@ void FE_Quit(void) {
 
 
 // Action user input
-static eGameState actionInput(void) {
+static StartGameChoice actionInput(void) {
 	DebounceReadKeyboard();
 	if(DebounceKeys[VK_1] != 0) {
-		return State_ContinueGame;
+		return SGC_ContinueGame;
 	}
 	if(DebounceKeys[VK_2] != 0) {
-		return State_NewGame;
+		return SGC_NewGame;
 	}
-	if(DebounceKeys[VK_3] != 0) {
-		return State_LoadGame;
-	}
-	return State_None;
+	return SGC_NoChoice;
 }
 

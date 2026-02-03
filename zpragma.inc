@@ -14,7 +14,7 @@
 ////#pragma output CRT_ORG_BSS = 0
 
 //// Disable interrupts at start and at exit
-#pragma output CRT_ENABLE_EIDI = 0x11
+// sg #pragma output CRT_ENABLE_EIDI = 0x11
 
 //// On exit, HALT (no more play nice with basic)
 ////#pragma output CRT_ON_EXIT = 0x10001
@@ -27,7 +27,7 @@
 #pragma output CLIB_BALLOC_TABLE_SIZE = 32		// INCREASE if MEMPOOL increases!!!
 
 //// do not create a heap for stdio (cannot open files)
-#pragma output CLIB_STDIO_HEAP_SIZE = 0
+// sg #pragma output CLIB_STDIO_HEAP_SIZE = 0
 
 # Append custom banks (defined in mmap.inc)
 #pragma output CRT_APPEND_MMAP = 1

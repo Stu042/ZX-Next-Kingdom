@@ -17,7 +17,6 @@
 #include "data.h"
 
 #include "GamePlay.h"
-#include "GameData.h"
 
 
 #pragma output CRT_ORG_CODE = 0x4000
@@ -38,17 +37,12 @@ void GP_Init(void) {
 	VBlankSwap();
 }
 
-void GP_SaveGame(void) {
-	BankGameData();
-	//SaveGame();
-}
-
 
 //  ***************************************************************************************
 //  GP_IsEndGame the game and cleanup
 //  ***************************************************************************************
 bool GP_IsEndGame(void) {
-	return (LandSize <= 0 || Population <= 0 || Grains <= 0);
+	return (Data.LandSize <= 0 || Data.Population <= 0 || Data.Grains <= 0);
 }
 
 

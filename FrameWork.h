@@ -48,7 +48,7 @@ typedef	uint64_t	uint64;
 typedef	int64_t		int64;
 
 
-#define	SetState(state)	(GameState=(state))
+#define	SetState(state)	(Data.GameState=(state))
 
 typedef enum eGameStateType {
 	State_None = 0,

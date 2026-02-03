@@ -2,10 +2,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "FrameWork.h"
-#include "GameData.h"
 #include "Kernel.h"
 #include "GameStd.h"
-
+#include "data.h"
 
 
 const uint8 StdTextColour = 68;
@@ -29,17 +28,17 @@ void PrintMainResources(void) {
 	PrintProp(80, stdTopTextPos(0), LoLightTextColour, "Total");
 	PrintProp(160, stdTopTextPos(0), LoLightTextColour, "Used");
 	PrintProp(230, stdTopTextPos(0), LoLightTextColour, "Year");
-	itoa(Year, buf, 10);
+	itoa(Data.Year, buf, 10);
 	PrintProp(230, stdTopTextPos(8), LoLightTextColour, buf);
 
-	PrintValue(LeftSideMargin, 80, stdTopTextPos(8), StdTextColour, "Population", Population);
-	PrintValue(LeftSideMargin, 80, stdTopTextPos(16), StdTextColour, "Land", LandSize);
-	PrintValue(LeftSideMargin, 80, stdTopTextPos(24), StdTextColour, "Grain", Grains);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(8), StdTextColour, "Population", Data.Population);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(16), StdTextColour, "Land", Data.LandSize);
+	PrintValue(LeftSideMargin, 80, stdTopTextPos(24), StdTextColour, "Grain", Data.Grains);
 
-	ltoa(UsedPop, buf, 10);
-	PrintResourceValue(160, stdTopTextPos(8), Population, UsedPop, buf);
-	ltoa(UsedGrain, buf, 10);
-	PrintResourceValue(160, stdTopTextPos(24), Grains, UsedGrain, buf);
+	ltoa(Data.UsedPop, buf, 10);
+	PrintResourceValue(160, stdTopTextPos(8), Data.Population, Data.UsedPop, buf);
+	ltoa(Data.UsedGrain, buf, 10);
+	PrintResourceValue(160, stdTopTextPos(24), Data.Grains, Data.UsedGrain, buf);
 }
 
 

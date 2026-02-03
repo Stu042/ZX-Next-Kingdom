@@ -5,7 +5,6 @@
 			include		"includes.inc"
 
 
-
 ; ******************************************************************************************************************************
 ;   Init the Kernel
 ; ******************************************************************************************************************************
@@ -1049,62 +1048,69 @@ _PrintProp:
 ; HL = ptr to string, null terminated
 ; ******************************************************************************
 PrintProp:
-			ld	(PrintCol),a
+			ld		(PrintCol),a
 @NextChar:
-			ld	a,b
-			cmp	191
-			ret	nc
-			ld	(CharPosition),bc
-			ld	a,(hl)			; A = ascii character
-			and	a
-			ret	z			; ret if null
-			inc	hl
-			push	hl			; save next char ptr
-			sub	a,' '
-			jr	nc,@printable
-			xor	a
-@printable:
-			ld	e,a			; E = char
-			ld	d,0			; mult char by 8 to get index into char data
-			sla	e
-			sla	e
-			rl	d
-			sla	e
-			rl	d
-			add	de,PropFontCharData	; DE = char width then char row data
-			ld	a,(de)			; A = char width
-			add	a,c			; calc next x pos
-			ld	c,a
+			ld		a,b
+			cmp		191
+			ret		nc
+			ld		(CharPosition),bc
+			ld		a,(hl)			; A = ascii character
+			and		a
+			ret		z			; Main function exit, ret if null
+			inc		hl
+			push	hl				; save next char ptr
+			sub		a,' '
+			jr		nz,@NotSpace
+			ld		a,4			; space is 4 pix wide
+			add		a,c
+			ld		c,a
+			pop	hl
+			jr		@NextChar
+@NotSpace:
+			jr		nc,@Printable
+			xor		a
+@Printable:
+			ld		e,a			; E = char
+			ld		d,0			; mult char by 8 to get index into char data
+			sla		e
+			sla		e
+			rl		d
+			sla		e
+			rl		d
+			add		de,PropFontCharData	; DE = char width then char row data
+			ld		a,(de)			; A = char width
+			add		a,c			; calc next x pos
+			ld		c,a
 			push	bc			; save next yx position
-			ld	a,(de)			; A = char width
-			ld	b,a			; B = char width
-			inc	de			; DE = first char row
-			ld	c,7			; C = 7 rows in total
+			ld		a,(de)			; A = char width
+			ld		b,a			; B = char width
+			inc		de			; DE = first char row
+			ld		c,7			; C = 7 rows in total
 @nextRow:
 			push	bc			; C = row count B = char width
-			ld	bc,(CharPosition)
-			inc	b
-			ld	(CharPosition),bc
-			call	GetPixelAddress		; HL = screen address
+			ld		bc,(CharPosition)
+			inc		b
+			ld		(CharPosition),bc
+			call		GetPixelAddress		; HL = screen address
 			pop	bc			; C = row count B = char width
 			push	bc
-			ld	a,(PrintCol)
-			ld	c,a			; text pixel colour
-			ld	a,(de)			; first row to print
+			ld		a,(PrintCol)
+			ld		c,a			; text pixel colour
+			ld		a,(de)			; first row to print
 @row:
-			sla	a
-			jr	nc, @nothingToPrint
-			ld	(hl),c			; draw colour if a pixel reqd
+			sla		a
+			jr		nc, @nothingToPrint
+			ld		(hl),c			; draw colour if a pixel reqd
 @nothingToPrint:
-			inc	l
-			djnz	@row			; complete row
-			inc	de			; next char data row
-			pop	bc			; B = row count C = char width
-			dec	c
-			jr	nz,@nextRow
+			inc		l
+			djnz		@row			; complete row
+			inc		de			; next char data row
+			pop		bc			; B = row count C = char width
+			dec		c
+			jr		nz,@nextRow
 			pop	bc			; next yx position
 			pop	hl			; next char ptr
-			jr	@NextChar
+			jr		@NextChar
 
 
 CharPosition:		dw 0
@@ -2089,145 +2095,273 @@ ReadNextRegsSYS:
 ;                               File System
 ; *******************************************************************************************************
 ; *******************************************************************************************************
-filename:	db	"savegame.kingdom"
+
+
+; *******************************************************************************************************
+;	EsxDosError OpenSaveGame(void)
+	PUBLIC _OpenSaveGame, OpenSaveGame
+_OpenSaveGame:
+OpenSaveGame:
+			push	af
+			push	bc
+			push	de
+			push	ix
+			ld		ix,SaveGameFilename	; we are using the same filename for current game
+			push		ix
+			pop		hl
+			ld		b,ESX_MODE_OPEN_CREATE + ESX_MODE_CREATE_NOEXIST + ESX_MODE_WRITE
+			ld		a,'*'
+			rst		$08
+			db		F_OPEN
+			ld		l,a
+			ld		h,0
+			jr		nc,@Okay
+			inc		h
+@Okay:
+			pop	ix
+			pop	de
+			pop	bc
+			pop	af
+			ret
+
+;	EsxDosError CloseSaveGame(uint16 fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
+	PUBLIC _CloseSaveGame, CloseSaveGame
+_CloseSaveGame:
+CloseSaveGame:
+			push	af
+			push	bc
+			push	de
+			push	ix
+			ld		a,l
+			rst		$08
+			db		F_CLOSE
+			ld		h,1
+			ld		l,a
+			pop	ix
+			pop	de
+			pop	bc
+			pop	af
+			ret
+
+;	EsxDosError SyncSaveGame(uint16 fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
+	PUBLIC _SyncSaveGame, SyncSaveGame
+_SyncSaveGame:
+SyncSaveGame:
+			push	af
+			push	bc
+			push	de
+			push	ix
+			ld		a,l
+			rst		$08
+			db		F_SYNC
+			ld		l,a
+			ld		h,0
+			jr		nc,@Okay
+			inc		h
+@Okay:
+			pop	ix
+			pop	de
+			pop	bc
+			pop	af
+			ret
+
+
+;	uint16 WriteSaveGame(uint16 fileHandle, uint8* addr, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+	PUBLIC _WriteSaveGame, WriteSaveGame
+_WriteSaveGame:
+			pop	de
+			pop	ix		; filehandle?
+			pop	bc		; length
+			pop	hl		; start
+			push	de
+WriteSaveGame:
+			ld		a,ixl
+			push		hl
+			push		ix
+			rst		$08
+			db		F_WRITE
+			ld		hl,bc
+			ret
+
+
+
+
+
+
+; *******************************************************************************************************
+SaveGameFilename:	db	"savegame.king", 0
 
 	PUBLIC _SaveGame, SaveGame
+; *******************************************************************************************************
+; uint8 SaveGame(uint8 *start, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh)
+;
+; *******************************************************************************************************
+
 _SaveGame:
+			pop	de
+			pop	hl	; start
+			pop	bc	; length
+			push	de
+; *******************************************************************************************************
+; SaveGame
+; In:
+;	HL = start
+;	BC = length
+; Returns:
+;	On error will print message to backbuffer
+;	L = EsxDos error code
+; *******************************************************************************************************
 SaveGame:
 			push	ix
-			call	GetSetDrive
-			ld	ix,filename
-			call	fcreate
-			and	a
-			jr	nz, @save	; created new file so now save
-			call	fOpen
-			jr	z,@exit		; cant open the existing file, aarrrgghhh
-@save:
-			ld	ix,$2000
-			ld	bc,$2000
-			ld	a,(handle)
-			call	fwrite
-			ld	a,(handle)
-			call	fClose
-@exit:
+			push	bc
+			push	hl
+			NextReg		$50,255			; page in rom															; make sure ROM is paged in
+			NextReg		$51,255			; page in rom
+			call		GetSetDrive
+			jr		c,@FailedGetSetDrive
+			ld		ix,SaveGameFilename	; we are using the same filename for current game
+			ld		a,(DefaultDrive)
+			ld		b,ESX_MODE_OPEN_CREATE + ESX_MODE_CREATE_TRUNC + ESX_MODE_WRITE
+			call		fOpen
+			pop	hl
+			pop	bc
+			jr		c,@FailedToOpen		; cant open the new or existing file, Ohno...Pop!
+			ld		(handle),a
+			push	hl				; ix = hl => start of data
 			pop	ix
+			call		fWrite
+			jr		c,@FailedToWrite
+			ld		a,(handle)
+			call		fClose
+			jr		c,@FailedToClose
+			pop	ix
+			xor		a
 			ret
+
+@Exit:
+			push	af
+			ld		a,68		; A = colour 68
+			ld		bc,0		; BC = yx position on screen
+			call		PrintProp	; HL = ptr to string, null terminated
+			pop	af
+			pop	ix
+			ld		l,a
+			ret
+
+@FailedGetSetDrive:
+			ld		hl,@SetDriveFailedErr
+			jr		@Exit
+@FailedToOpen:
+			ld		hl,@OpenFailedErr
+			jr		@Exit
+@FailedToWrite:
+			ld		hl,@WriteFailedErr
+			ld		a,255
+			jr		@Exit
+@FailedToClose:
+			ld		hl,@CloseFailedErr
+			jr		@Exit
+
+
+@OkStr:			db "Okay",0
+@SetDriveFailedErr:	db "Set Drive failed",0
+@OpenFailedErr:		db "Open failed",0
+@CloseFailedErr:	db "Close failed",0
+@WriteFailedErr:	db "Write failed",0
+
+
 
 
 ; *******************************************************************************************************
 ;   Get/Set the drive (get default drive)
 ;
 ; *******************************************************************************************************
-PUBLIC GetSetDrive
-GetSetDrive:    
-			push		af																; no idea what it uses....
-			push		bc
-			push		de
-			push		hl
-			push		ix
-
-			xor		a																; set drive. 0 is default
+PUBLIC GetSetDrive, _GetSetDrive
+_GetSetDrive:
+GetSetDrive:
+			xor		a		; set drive. 0 is default
+			ld		(DefaultDrive),a
 			rst		$08
 			db		M_GETSETDRV
+			ret		c
 			ld		(DefaultDrive),a
-
-			pop		ix
-			pop		hl
-			pop		de
-			pop		bc
-			pop		af
 			ret
 
 
-; *******************************************************************************************************
-;   Function:   Create a new file
-;   In:     ix = filename pointer
-;   ret     a  = handle, 0 on error
-; *******************************************************************************************************
-PUBLIC fcreate
-fcreate:
-			ld		b,$0c
-			push		ix
-			pop		hl
-			ld		a,42
-			rst		$08
-			db		$9a
-			ld		(handle),a
-			ret
-
-; *******************************************************************************************************
-;   Function:   Open a file read for reading/writing
-;   In:     ix = filename
-;           b  = Open filemode
-;   ret     a  = handle, 0 on error
 ; *******************************************************************************************************
 PUBLIC fOpen
+; *******************************************************************************************************
+;   Function:   Open a file read for reading/writing
+;   In:     IX = filename
+;           B  = Open filemode
+;   ret     A  = handle, 0 on error
+; *******************************************************************************************************
 fOpen:      
-			push		hl
-			push		ix
-			pop		hl
+			push	hl
+			push	ix
+			pop	hl
 			ld		a,(DefaultDrive)
 			rst		$08
 			db		F_OPEN
-			pop		hl
+			pop	hl
 			ret
 
 
+; *******************************************************************************************************
+PUBLIC fRead
 ; *******************************************************************************************************
 ;   Function    Read bytes from the open file
 ;   In:     ix  = address to read into
 ;           bc  = amount to read
 ;   ret:        carry set = error
 ; *******************************************************************************************************
-PUBLIC fread
-fread:
+fRead:
 			or		a																; is it zero?
 			ret		z																; if so return        
-
-			push		hl
-
+			push	hl
 			push		ix
 			pop		hl
 			rst		$08
 			db		F_READ
-
-			pop		hl
+			pop	hl
 			ret
 
+
+; *******************************************************************************************************
+PUBLIC fWrite
 ; *******************************************************************************************************
 ;   Function    Read bytes from the open file
-;   In:         ix  = address to read into
-;               bc  = amount to read
-;   ret:        carry set = error
+;   In:         A = file handle
+;		IX  = address to write from
+;               BC  = amount to write
+;   ret:        Carry set = error
+;		BC = bytes actually written
 ; *******************************************************************************************************
-PUBLIC fwrite
-fwrite:
-			or		a																; is it zero?
-			ret		z																; if so return        
-
-			push		hl
-
-			push		ix
-			pop		hl
+fWrite:
+			or		a		; do we have a file handle?
+			ret		z		; if no then exit
+			push	hl
+			push	ix
+			pop	hl
 			rst		$08
 			db		F_WRITE
-
-			pop		hl
+			pop	hl
 			ret
 
+
+; *******************************************************************************************************
+PUBLIC fClose
 ; *******************************************************************************************************
 ;   Function:   Close open file
 ;   In:     a  = handle
 ;   ret     a  = handle, 0 on error
 ; *******************************************************************************************************
-PUBLIC fClose
 fClose:     
 			or		a																; is it zero?
 			ret		z																; if so return        
 			rst		$08
 			db		F_CLOSE
 			ret
-
 
 
 ; *******************************************************************************************************
@@ -2237,14 +2371,14 @@ fClose:
 ;               BCDE = bytes to seek
 ;   ret:        BCDE = file pos from start
 ; *******************************************************************************************************
-PUBLIC fseek
-fseek:
-			push		ix
-			push		hl
+PUBLIC fSeek
+fSeek:
+			push	ix
+			push	hl
 			rst		$08
 			db		F_SEEK
-			pop		hl
-			pop		ix
+			pop	hl
+			pop	ix
 			ret
 
 
@@ -2277,9 +2411,9 @@ fStat:
 
 
 ; *******************************************************************************************************
-; Function: Load a whole file into memory   (confirmed working on real machine)
-; In:       Load(filename, bank, offset);
-; Out:      none
+; Function: Will overwrite kernel
+; In:       
+; Out:      
 ; *******************************************************************************************************
 PUBLIC SaveBanks
 SaveBanks:
@@ -2298,7 +2432,7 @@ SaveBanksFast:
 
 
 ; *******************************************************************************************************
-; Function: Load a whole file into memory   (confirmed working on real machine)
+; Function: Will overwrite kernel - Load a whole file into memory   (confirmed working on real machine)
 ; In:       Load(filename, bank, offset);
 ; Out:      none
 ; *******************************************************************************************************
@@ -2389,7 +2523,7 @@ _Load:
 			add		ix,de
 			ld		a,(handle)
 
-			call		fread																; read data from A to address IX of length BC                
+			call		fRead																; read data from A to address IX of length BC                
 			jr		c,@error_reading
 			ld		(FileStatsBuffer+2),bc														; number of bytes actually read....
 

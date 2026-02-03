@@ -2,8 +2,6 @@
 
 ### A resource management game for the ZX Spectrum Next.
 
-
-ZX-Next-Kingdom Copyright (c) 2025 Stuart Geddes.
 Based on the ULA C Framework for the ZX Spectrum Next by Mike Dailly 2025. Edited to work with the ZX Nexts Layer 2 display running at a resolution of 256x192 pixels.
 
 This (and the original framework) is licensed by the MIT License, so feel free to use this code any way you want.
