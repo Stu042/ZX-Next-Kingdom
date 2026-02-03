@@ -27,28 +27,107 @@
 // internal protos
 static StartGameChoice actionInput(void);
 
+static HiScores hiScores;
+
+static void initHiScores(void) {
+	const HiScore defaultScores[HI_SCORES_COUNT] = {
+		[0] = {
+			.Name = "Louis",
+			.Years = 72
+		},
+		[1] = {
+			.Name = "Lizzie II",
+			.Years = 70
+		},
+		[2] = {
+			.Name = "Rama IX",
+			.Years = 70
+		},
+		[3] = {
+			.Name = "Jo Jo",
+			.Years = 70
+		},
+		[4] = {
+			.Name = "Janaab",
+			.Years = 68
+		},
+		[5] = {
+			.Name = "Joey",
+			.Years = 67
+		},
+		[6] = {
+			.Name = "Smoke Jag",
+			.Years = 67
+		},
+		[7] = {
+			.Name = "Ramesses",
+			.Years = 66
+		},
+		[8] = {
+			.Name = "Ferdinand",
+			.Years = 65
+		},
+		[9] = {
+			.Name = "Lil Vic",
+			.Years = 63
+		}
+	};
+	HiScore *hs = hiScores.Scores;
+	const HiScore *defaultHiScore = defaultScores;
+	for(uint8 i = 0; i < HI_SCORES_COUNT; i++) {
+		strcpy(hs[i].Name, defaultHiScore->Name);
+		hs[i].Years = defaultHiScore->Years;
+		defaultHiScore++;
+	}
+}
+
 
 static char buf[32];
 static const char madeBy[] = "Made By Stu v";
+
+static void me(void) {
+	strcpy(buf, madeBy);
+	strcpy(&buf[strlen(madeBy)], Data.Version);
+	PrintPropCentre(184, 4, buf);
+}
+static void feBkg(void) {
+	Border(INK_BLACK);
+	ClsL2(0);
+	BlitTransImage(68,0, 227, kingdom);
+	Render(190,20, RightBannerPic);
+	Render(10,20, LeftBannerPic);
+}
+
+uint8 cols[HI_SCORES_COUNT] = {252, 248, 248, 244,  244,  244, 240, 240, 240, 240 };
+
+void FE_ShowHiScore(void) {
+	feBkg();
+	HiScore *hs = hiScores.Scores;
+	for(uint8 i = 0; i < HI_SCORES_COUNT; i++) {
+		PrintProp(60, i*9+50, cols[i], hs->Name);
+		itoa(hs->Years, buf, 10);
+		PrintProp(150, i*9+50, cols[i], buf);
+		hs++;
+	}
+	me();
+	VBlankSwap();
+	HangForKey();
+}
+
 
 //  ***************************************************************************************
 //  Init the Front End system
 //  State_InitFrontEnd
 //  ***************************************************************************************
 void FE_Init(void) {
-	Border(INK_BLACK);
-	ClsL2(0);
-	BlitTransImage(68,0, 227, kingdom);
-	Render(190,20, RightBannerPic);
-	Render(10,20, LeftBannerPic);
-	PrintPropCentre(96, 240, "Any key to start game");
+	initHiScores();
+	feBkg();
 	PrintProp(90, 48, 240, "1. Continue Game");
 	PrintProp(90, 64, 240, "2. New Game");
-	strcpy(buf, madeBy);
-	strcpy(&buf[strlen(madeBy)], Data.Version);
-	PrintPropCentre(184, 4, buf);
+	PrintProp(90, 80, 240, "3. Hi Scores");
+	me();
 	VBlankSwap();
-} 
+}
 
 
 
@@ -128,6 +207,9 @@ static StartGameChoice actionInput(void) {
 	}
 	if(DebounceKeys[VK_2] != 0) {
 		return SGC_NewGame;
+	}
+	if(DebounceKeys[VK_3] != 0) {
+		return SGC_ShowHiScore;
 	}
 	return SGC_NoChoice;
 }

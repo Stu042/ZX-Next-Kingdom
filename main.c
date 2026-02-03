@@ -114,12 +114,23 @@ void MainLoop(void) {
 				break;
 
 			case State_FrontEnd:
-				StartGameChoice gameStartChoice = FE_Run();	// state set by the menu option selected
-				if (gameStartChoice == SGC_NewGame) {
-					SetState(State_NewGame);
-				} else if (gameStartChoice == SGC_ContinueGame) {
-					SetState(State_ContinueGame);
+				StartGameChoice menuChoice = FE_Run();	// state set by the menu option selected
+				switch (menuChoice) {
+					case SGC_NewGame:
+						SetState(State_NewGame);
+						break;
+					case SGC_ContinueGame:
+						SetState(State_ContinueGame);
+						break;
+					case SGC_ShowHiScore:
+						SetState(State_ShowHiScore);
+						break;
 				}
+				break;
+			
+			case State_ShowHiScore:
+				FE_ShowHiScore();
+				SetState(State_InitFrontEnd);
 				break;
 
 			case State_ContinueGame:

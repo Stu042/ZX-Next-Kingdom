@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 //#define DEBUG (1)
+#define IN_EMU (1)
 
 
 #define BREAK		{ intrinsic_emit(0xFD); intrinsic_emit(0x00); }
@@ -57,6 +58,7 @@ typedef enum eGameStateType {
 	State_ContinueGame,
 	State_NewGame,
 	State_LoadGame,
+	State_ShowHiScore,
 
 	State_QuitFrontEnd,		// quit the front end
 

@@ -54,7 +54,7 @@ obj/FrontEndAsm.o: FrontEndAsm.asm
 obj/GamePlay.o: GamePlay.c FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GamePlay.o GamePlay.c
 obj/GamePlayAsm.o: GamePlayAsm.asm
-	$(CC) $(CFLAGS) --codesegPAGE_08_FRONTEND_SEG --constsegPAGE_08_FRONTEND_SEG -o obj/GamePlayAsm.o GamePlayAsm.asm	
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GamePlayAsm.o GamePlayAsm.asm	
 
 
 
