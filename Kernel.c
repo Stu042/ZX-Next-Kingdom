@@ -13,10 +13,19 @@
 #include "Kernel.h"
 
 
-uint8 DebounceKeys[VK_NUM_KEYS];
-uint8 PrevDebounceKeys[VK_NUM_KEYS];
+FileStatsBuffer FileStatsBuf;
 
-char Characters[VK_NUM_KEYS] = {
+char Buffer[BUFFER_SIZE];
+char MadeBy[] = "Made By Stu v";
+
+
+
+// internal vars
+
+
+static uint8 debounce[VK_NUM_KEYS];
+
+static const char Characters[VK_NUM_KEYS] = {
 	255, 'Z', 'X', 'C', 'V',
 	'A', 'S', 'D', 'F', 'G',
 	'Q', 'W', 'E', 'R', 'T',
@@ -27,34 +36,17 @@ char Characters[VK_NUM_KEYS] = {
 	' ', 255, 'M', 'N', 'B'
 };
 
+// internal protos
 
-// protos
 static void chkKeys(char* buf, int usedBufSize);
 static void chkNumberKeys(char* buf, int usedBufSize);
+static bool chkDelete(char* buf, int usedBufSize);
 
 
-void InitDebounce(void) {
-	ReadKeyboard();
-	for(uint8 i = 0; i < VK_NUM_KEYS; i++) {
-		PrevDebounceKeys[i] = Keys[i];
-		DebounceKeys[i] = 0;
-	}
-}
 
-void DebounceReadKeyboard(void) {
-	ReadKeyboard();
-	for(uint8 i = 0; i < VK_NUM_KEYS; i++) {
-		if (i != VK_CAPS && Keys[i] != 0 && PrevDebounceKeys[i] != 0) {	// dont debounce caps
-			DebounceKeys[i] = 0;
-		} else if (Keys[i] != 0 && PrevDebounceKeys[i] == 0) {
-			PrevDebounceKeys[i] = 1;
-			DebounceKeys[i] = 1;
-		} else if (Keys[i] == 0) {
-			PrevDebounceKeys[i] = 0;
-			DebounceKeys[i] = 0;
-		}
-	}
-}
+// /////////
+// Display
+
 
 void VBlankSwap(void) {
 	WaitVBlank();
@@ -62,9 +54,8 @@ void VBlankSwap(void) {
 }
 
 
-
 uint8 CentreText(char *text) {
-	uint8 xpos = (256 - PropPixelLength(text)) >> 1;
+	uint8 xpos = (DISPLAY_WIDTH - PropPixelLength(text)) >> 1;
 	return xpos;
 }
 
@@ -75,13 +66,33 @@ void PrintPropCentre(uint8 y, uint8 col, char *text) {
 }
 
 
-static bool chkDelete(char* buf, int usedBufSize) {
-	if (DebounceKeys[VK_CAPS] != 0 && DebounceKeys[VK_0] != 0) {
-		buf[usedBufSize-1] = 0;
-		return true;
-	}
-	return false;
+void PrintVersion(void) {
+	strcpy(Buffer, MadeBy);
+	strcpy(&Buffer[strlen(MadeBy)], GameVersion);
+	PrintPropCentre(184, 4, Buffer);
 }
+
+// /////////
+// Input
+
+
+
+// call ReadKeyboard() ideally only once per frame before calling.
+bool Debounce(uint8 key) {
+	if (Keys[key] == 0) {		// is not pressed
+		debounce[key] = false;	// flag as previously not pressed
+		return false;
+	}
+	if (debounce[key]) {		// previously pressed (and checked)
+		return false;
+	}
+	if (key != VK_CAPS) {		// dont debounce caps key
+		debounce[key] = true;	// flag as previously pressed
+	}
+	return true;			// return pressed
+}
+
+
 
 void StringInput(char* buf, int totalBufSize) {
 	int usedBufSize = strlen(buf);
@@ -90,23 +101,6 @@ void StringInput(char* buf, int totalBufSize) {
 		return;
 	}
 	chkKeys(buf, usedBufSize);
-}
-
-
-static void chkKeys(char* buf, int usedBufSize) {
-	if (chkDelete(buf, usedBufSize)) {
-		return;
-	}
-	for(uint8 i=0; i < VK_NUM_KEYS; i++) {
-		if (DebounceKeys[i] != 0) {
-			char c = Characters[i];
-			if (c != (char)255) {
-				buf[usedBufSize++] = c;
-				buf[usedBufSize] = 0;
-				return;
-			}
-		}
-	}
 }
 
 
@@ -120,32 +114,19 @@ void NumberInput(char* buf, int totalBufSize) {
 }
 
 
-static void chkNumberKeys(char* buf, int usedBufSize) {
-	if (chkDelete(buf, usedBufSize)) {
-		return;
-	}
-	for(uint8 i=VK_1; i <= VK_6; i++) {
-		if (DebounceKeys[i] != 0) {
-			char c = Characters[i];
-			buf[usedBufSize++] = c;
-			buf[usedBufSize] = 0;
-			return;
-		}
-	}
-}
-
-
-
+// ReadKeyboard() is called internally
 bool AnyKey(void) {
-	DebounceReadKeyboard();
+	ReadKeyboard();
 	for(uint8 i=0; i<VK_NUM_KEYS; i++) {
-		if (DebounceKeys[i] != 0) {
+		if (Debounce(i)) {
 			return true;
 		}
 	}
 	return false;
 }
 
+
+// ReadKeyboard() is called internally
 void HangForKey(void) {
 	while(true) {
 		if (AnyKey()) {
@@ -156,6 +137,50 @@ void HangForKey(void) {
 
 
 
+static void chkKeys(char* buf, int usedBufSize) {
+	if (chkDelete(buf, usedBufSize)) {
+		return;
+	}
+	for(uint8 i=0; i < VK_NUM_KEYS; i++) {
+		if (Debounce(i)) {
+			char c = Characters[i];
+			if (c != (char)255) {
+				buf[usedBufSize++] = c;
+				buf[usedBufSize] = 0;
+				return;
+			}
+		}
+	}
+}
+
+static bool chkDelete(char* buf, int usedBufSize) {
+	if (Debounce(VK_CAPS) && Debounce(VK_0)) {
+		buf[usedBufSize-1] = 0;
+		return true;
+	}
+	return false;
+}
+
+static void chkNumberKeys(char* buf, int usedBufSize) {
+	if (chkDelete(buf, usedBufSize)) {
+		return;
+	}
+	for(uint8 i=VK_1; i <= VK_6; i++) {
+		if (Debounce(i)) {
+			char c = Characters[i];
+			buf[usedBufSize++] = c;
+			buf[usedBufSize] = 0;
+			return;
+		}
+	}
+}
+
+
+
+
+
+// /////////
+// Random numbers
 
 
 /// Returns random number starts at From and ends at To (inclusive)
@@ -215,3 +240,5 @@ int32 clamp(int32 val, int32 min, int32 max) {
 	}
 	return val;
 }
+
+

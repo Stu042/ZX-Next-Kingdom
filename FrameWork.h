@@ -8,8 +8,8 @@
 #include <intrinsic.h>
 #include <stdint.h>
 
-//#define DEBUG (1)
-#define IN_EMU (1)
+// #define IN_DEBUG (1)
+// #define IN_EMU (1)
 
 
 #define BREAK		{ intrinsic_emit(0xFD); intrinsic_emit(0x00); }
@@ -18,7 +18,7 @@
 #define NextRegA(r,var)	ZXN_NEXTREGA_helper(r,var)
 
 
-// mem addr $0000
+/// mem addr $0000
 #define BankIn00(v) ZXN_NEXTREG_helper(0x50,v)
 // mem addr $2000
 #define BankIn20(v) ZXN_NEXTREG_helper(0x51,v)
@@ -49,21 +49,19 @@ typedef	uint64_t	uint64;
 typedef	int64_t		int64;
 
 
-#define	SetState(state)	(Data.GameState=(state))
 
 typedef enum eGameStateType {
 	State_None = 0,
-	State_InitFrontEnd = 1,		// init the front end
-	State_FrontEnd,			// Process front end
+	State_ScoreInit,
+	State_FrontEndRender,		// init the front end
+	State_FrontEndAction,			// Process front end
 	State_ContinueGame,
 	State_NewGame,
-	State_LoadGame,
 	State_ShowHiScore,
 
 	State_QuitFrontEnd,		// quit the front end
 
 	State_InitGame,			// init the game
-	//State_Game,			// process the game
 
 	State_PopInit,
 	State_PopRun,
@@ -79,6 +77,8 @@ typedef enum eGameStateType {
 
 	State_QuitGame,			// quit the game
 } eGameState;
+
+
 
 typedef	struct SHWSprite {
 	uint8	X;

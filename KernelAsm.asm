@@ -1,63 +1,9 @@
 
 			SECTION		KERNEL_CODE
-			EXTERN		_VBlank, _Port123b, _SpriteData, _SpriteShape, _PrintOffset
+			EXTERN		_VBlank, _Port123b
 
 			include		"includes.inc"
 
-
-; ******************************************************************************************************************************
-;   Init the Kernel
-; ******************************************************************************************************************************
-PUBLIC _InitKernel, InitKernel
-InitKernel:
-_InitKernel:
-			LD		hl,0x3d00
-			LD		de,_RomFont
-			LD		bc,0x300
-			CALL		DMACopy
-			RET
-
-; ******************************************************************************************************************************
-;   Wipe all sprites
-; ******************************************************************************************************************************
-PUBLIC _WipeSprites, WipeSprites
-WipeSprites:
-_WipeSprites:
-			ld		ix, _SpriteData
-			ld		b,128
-			ld		c,64
-			ld		de,5
-			xor		a
-@InitSprites: 
-			ld		(ix+0),a
-			ld		(ix+1),a
-			ld		(ix+2),a
-			ld		(ix+3),c															; %01000000 - enable byte 4
-			ld		(ix+0),a
-			add		ix,de
-			djnz		@InitSprites
-			ret
-
-; ******************************************************************************************************************************
-;   Reset all sprite data, including the extra bit for using 5th byte
-; ******************************************************************************************************************************
-PUBLIC _InitSpriteData, InitSpriteData
-InitSpriteData:
-_InitSpriteData:
-			ld		ix, _SpriteData
-			ld		b,128
-			ld		c,64
-			ld		de,5
-			xor		a   
-@InitSprites: 
-			ld		(ix+0),a
-			ld		(ix+1),a
-			ld		(ix+2),a
-			ld		(ix+3),c															; %01000000 - enable byte 4
-			ld		(ix+0),a
-			add		ix,de
-			djnz		@InitSprites
-			ret
 
 
 ; ******************************************************************************************************************************
@@ -322,52 +268,6 @@ DMAFillInternal:	LD	HL,DMAFillProg
     			LD	BC,DMAFillProgL * 256 + Z80DMAPORT 
     			OTIR
 			RET
-
-; ******************************************************************************
-; Function: Upload a set of sprites
-; In:   E = sprite shape to start at
-;       D = number of sprites
-;       HL = shape data
-;
-; ******************************************************************************
-PUBLIC _UploadSprites, UploadSprites
-_UploadSprites:
-			pop		bc	; pop return address
-			pop		de	; get Start Shape
-			pop		hl	; get number of shapes
-			ld		d,l
-			pop		hl	; get shape address
-			push		bc	; restore return address
-
-    ; Upload sprite graphics
-			ld		a,e	; get start shape
-
-; ******************************************************************************
-; Function: Upload a set of sprites
-; In:   A = sprite shape to start at
-;       D = number of sprites
-;       HL = shape data
-;
-; ******************************************************************************
-UploadSprites:
-			ld		e,0	; each pattern is 256 bytes
-
-@AllSprites:               
-    ; select pattern 2
-			ld		bc, $303B
-			out		(c),a
-
-    ; upload ALL sprite sprite image data
-			ld		bc, SpriteShapePort
-@UpLoadSprite:           
-			outi
-
-			dec		de
-			ld		a,d
-			or		e
-			jr		nz, @UpLoadSprite
-			ret
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; void BlitLargeImageAt(uint8 screenY, uint8 imageBank, uint8 bankCount)
 ; Render an image that spans across multiple banks, screenY must be on the start of a bank boundary.
@@ -703,104 +603,6 @@ GetPixelAddressMemBankOnscreen:
 			jr	GetPixelAddressMemBankAeqBankbase
 
 
-; ******************************************************************************
-; Function: Print string to L2 display.
-; A: colour, 
-; BC: YX screen position
-; HL: Text
-; ******************************************************************************
-	PUBLIC _PrintL2, PrintL2
-_PrintL2:
-			pop	de	; return addr
-			pop	bc	; YX pos
-			dec	sp
-			pop	af
-			pop	hl
-			push	de
-
-PrintL2:
-			ld	(PrintCol),a
-
-@nextChar:
-			ld	a,192
-			cp	b
-			ret	z				; return if we are off bottom of display
-			ld	a,(hl)				; get next character
-			inc	hl
-			cp	10				; is it 10 (LF)
-			jr	z,@newLine
-			cp	13				; is it 13, (RET)
-			jr	z,@nextChar
-			and	a
-			ret	z				; return on null terminated str
-
-			sub	32				; subtract space
-			jr	c,@renderChar			; if overflow then an ascii char and render?
-			jr	z,@moveRight			; if equal to space then next char
-
-@renderChar:
-			push	hl
-			push	bc
-			call	PrintCharL2
-			pop	bc
-			pop	hl
-
-@moveRight:
-			ld	a,8				; width of a char
-			add	a,c				; inc x coord by width of a char
-
-			ld	c,a
-			jr	@nextChar			; jump to getting next char to render
-
-@newLine:		; inc y to new line and x to 0 - possible todo, setup a frame for the text (top left, bottom right)
-			ld	a,8
-			add	a,b
-			ld	b,a
-			ld	c,0
-			jr	@nextChar
-
-
-; ******************************************************************************
-; Function: Print 8x8 character.
-; (PrintCol): Pixel colour
-; A = Printable character - 32
-; BC = YX screen pos
-; On Exit: C unchanged
-; Destroyed: A, B, B', DE, HL
-; ******************************************************************************
-PrintCharL2:
-			ld	d,0				; calc offset into rom font
-			sla	a				; char * 8
-			rl	d
-			sla	a
-			rl	d
-			sla	a
-			rl	d
-			ld	e,a				; rom font aligned to 256 bytes so just stick in offset
-			add	de,_RomFont			; add on base
-
-			exx
-			ld	b,8
-
-@loop:
-			exx
-			call	GetPixelAddress
-			push	bc				; save yx pos
-			ld	a,(de)				; A = next row of bits to print
-			inc	de
-			ld	c,a				; C = bits to render
-			ld	a,(PrintCol)			; A = colour
-			call	PrintByte
-			; ld	a,b				; if not zero then at end of line
-			pop	bc				; get YX back
-			inc	b				; next Y pos
-			ld	a,192
-			cp	b
-			ret	z				; return if we are off bottom of display
-			exx
-			djnz	@loop				; continue if more
-			ret
-
 
 ; ******************************************************************************
 ; Function: Print 8 pixels in a row. Stop if going off right of display.
@@ -1033,6 +835,7 @@ PropPixelLength:
 ; ******************************************************************************
 ; void PrintProp(uint8 x, uint8 y, uint8 col, char *text)
 ; ******************************************************************************
+			defc	CHAR_SPACE_WIDTH = 4
 	PUBLIC _PrintProp, PrintProp
 _PrintProp:
 			pop	de	; return addr
@@ -1060,12 +863,12 @@ PrintProp:
 			inc		hl
 			push	hl				; save next char ptr
 			sub		a,' '
-			jr		nz,@NotSpace
-			ld		a,4			; space is 4 pix wide
-			add		a,c
-			ld		c,a
-			pop	hl
-			jr		@NextChar
+			; jr		nz,@NotSpace
+			; ld		a,CHAR_SPACE_WIDTH	; space is 4 pix wide
+			; add		a,c
+			; ld		c,a
+			; pop	hl
+			; jr		@NextChar
 @NotSpace:
 			jr		nc,@Printable
 			xor		a
@@ -1119,7 +922,7 @@ CharPosition:		dw 0
 
 PropFontCharData:
 Space:
-	db 4
+	db CHAR_SPACE_WIDTH
 	db %00000000
 	db %00000000
 	db %00000000
@@ -1445,14 +1248,14 @@ CapC:
 	db %10000000
 	db %01100000
 CapD:
-	db 4
-	db %11000000
-	db %10100000
-	db %10100000
-	db %10100000
-	db %10100000
-	db %10100000
-	db %11000000
+	db 5
+	db %11100000
+	db %10010000
+	db %10010000
+	db %10010000
+	db %10010000
+	db %10010000
+	db %11100000
 CapE:
 	db 5
 	db %11100000
@@ -2027,32 +1830,6 @@ _ReadKeyboard:
 ExitKeyRead:
 			ret
 
-
-; ******************************************************************************
-; Function: Copy sprite data (x,y etc) to BRAM (assumes extended data)
-; In:   hl = Src
-;       d = slot
-;       a = count
-;       
-;
-;   |*|*||0011 0000 0011 1011| 0x303b  |Sprite slot, flags
-;   | |*||XXXX XXXX 0101 0111| 0x57    |Sprite attributes
-;   | |*||XXXX XXXX 0101 1011| 0x5b    |Sprite pattern
-
-; ******************************************************************************
-PUBLIC _CopySpriteData
-_CopySpriteData:
-			ld		hl,_SpriteData
-			ld		(DMASpSrc),hl															; 16
-			ld		bc,$303b
-			out		(c),d
-			ld		hl,640																; 128 * 5
-			ld		(DMASpLen),hl															; store size
-			ld		hl,DMASpriteCopyProg														; 10
-			ld		bc,Z80DMAPORT+(DMASPCOPYSIZE*256)												; 10
-			otir																		; 21*20  + 240*4
-			ret
-
 ; ******************************************************************************
 ; Function: Read a next register
 ;           uint16 v = ReadNextReg(uint16 reg)
@@ -2093,297 +1870,210 @@ ReadNextRegsSYS:
 ; *******************************************************************************************************
 ;                               File System
 ; *******************************************************************************************************
-; *******************************************************************************************************
-
-
-; *******************************************************************************************************
-;	EsxDosError OpenSaveGame(void)
-	PUBLIC _OpenSaveGame, OpenSaveGame
-_OpenSaveGame:
-OpenSaveGame:
-			push	af
-			push	bc
-			push	de
-			push	ix
-			ld		ix,SaveGameFilename	; we are using the same filename for current game
-			push		ix
-			pop		hl
-			ld		b,ESX_MODE_OPEN_CREATE + ESX_MODE_CREATE_NOEXIST + ESX_MODE_WRITE
-			ld		a,'*'
-			rst		$08
-			db		F_OPEN
-			ld		l,a
-			ld		h,0
-			jr		nc,@Okay
-			inc		h
-@Okay:
-			pop	ix
-			pop	de
-			pop	bc
-			pop	af
-			ret
-
-;	EsxDosError CloseSaveGame(uint16 fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
-	PUBLIC _CloseSaveGame, CloseSaveGame
-_CloseSaveGame:
-CloseSaveGame:
-			push	af
-			push	bc
-			push	de
-			push	ix
-			ld		a,l
-			rst		$08
-			db		F_CLOSE
-			ld		h,1
-			ld		l,a
-			pop	ix
-			pop	de
-			pop	bc
-			pop	af
-			ret
-
-;	EsxDosError SyncSaveGame(uint16 fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
-	PUBLIC _SyncSaveGame, SyncSaveGame
-_SyncSaveGame:
-SyncSaveGame:
-			push	af
-			push	bc
-			push	de
-			push	ix
-			ld		a,l
-			rst		$08
-			db		F_SYNC
-			ld		l,a
-			ld		h,0
-			jr		nc,@Okay
-			inc		h
-@Okay:
-			pop	ix
-			pop	de
-			pop	bc
-			pop	af
-			ret
-
-
-;	uint16 WriteSaveGame(uint16 fileHandle, uint8* addr, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
-	PUBLIC _WriteSaveGame, WriteSaveGame
-_WriteSaveGame:
-			pop	de
-			pop	ix		; filehandle?
-			pop	bc		; length
-			pop	hl		; start
-			push	de
-WriteSaveGame:
-			ld		a,ixl
-			push		hl
-			push		ix
-			rst		$08
-			db		F_WRITE
-			ld		hl,bc
-			ret
-
-
 
 
 
 
 ; *******************************************************************************************************
-SaveGameFilename:	db	"savegame.king", 0
-
-	PUBLIC _SaveGame, SaveGame
+	PUBLIC _FileStats, FileStats
 ; *******************************************************************************************************
-; uint8 SaveGame(uint8 *start, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh)
+;   bool FileStats(char *filename) __z88dk_fastcall __preserves_regs(a, b, c, d, e, h, iyl,iyh);
 ;
 ; *******************************************************************************************************
-
-_SaveGame:
-			pop	de
-			pop	hl	; start
-			pop	bc	; length
-			push	de
+_FileStats:
 ; *******************************************************************************************************
-; SaveGame
-; In:
-;	HL = start
-;	BC = length
-; Returns:
-;	On error will print message to backbuffer
-;	L = EsxDos error code
+;   FileStats
+; IN:
+;	HL = filename
+; OUT:
+;	L = esx dos error
+;	_FileStatsBuf = file stats
+;
 ; *******************************************************************************************************
-SaveGame:
-			push	ix
-			push	bc
+FileStats:
 			push	hl
-			NextReg		$50,255			; page in rom															; make sure ROM is paged in
-			NextReg		$51,255			; page in rom
-			call		GetSetDrive
-			jr		c,@FailedGetSetDrive
-			ld		ix,SaveGameFilename	; we are using the same filename for current game
-			ld		a,(DefaultDrive)
-			ld		b,ESX_MODE_OPEN_CREATE + ESX_MODE_CREATE_TRUNC + ESX_MODE_WRITE
-			call		fOpen
+			call		EsxGetDrive
+			ld		(DefaultDrive),a
+			pop	ix
+			push	ix
 			pop	hl
-			pop	bc
-			jr		c,@FailedToOpen		; cant open the new or existing file, Ohno...Pop!
-			ld		(handle),a
-			push	hl				; ix = hl => start of data
-			pop	ix
-			call		fWrite
-			jr		c,@FailedToWrite
-			ld		a,(handle)
-			call		fClose
-			jr		c,@FailedToClose
-			pop	ix
-			xor		a
-			ret
-
-@Exit:
-			push	af
-			ld		a,68		; A = colour 68
-			ld		bc,0		; BC = yx position on screen
-			call		PrintProp	; HL = ptr to string, null terminated
-			pop	af
-			pop	ix
+			ld		de,_FileStatsBuf
+			rst		$08
+			db		F_STAT
 			ld		l,a
 			ret
 
-@FailedGetSetDrive:
-			ld		hl,@SetDriveFailedErr
-			jr		@Exit
-@FailedToOpen:
-			ld		hl,@OpenFailedErr
-			jr		@Exit
-@FailedToWrite:
-			ld		hl,@WriteFailedErr
-			ld		a,255
-			jr		@Exit
-@FailedToClose:
-			ld		hl,@CloseFailedErr
-			jr		@Exit
-
-
-@OkStr:			db "Okay",0
-@SetDriveFailedErr:	db "Set Drive failed",0
-@OpenFailedErr:		db "Open failed",0
-@CloseFailedErr:	db "Close failed",0
-@WriteFailedErr:	db "Write failed",0
-
-
-
 
 ; *******************************************************************************************************
-;   Get/Set the drive (get default drive)
+;   Get/Set the drive (get default drive), also pages in rom
 ;
 ; *******************************************************************************************************
-PUBLIC GetSetDrive, _GetSetDrive
-_GetSetDrive:
-GetSetDrive:
-			xor		a		; set drive. 0 is default
+	PUBLIC EsxGetDrive, _EsxGetDrive
+_EsxGetDrive:
+EsxGetDrive:
+			xor		a			; set drive. 0 is default
 			ld		(DefaultDrive),a
 			rst		$08
 			db		M_GETSETDRV
-			ret		c
+			jr		nc, @Okay
+			ld		l,a
+			ret
+@Okay:
 			ld		(DefaultDrive),a
+			ld		l,0
 			ret
 
 
 ; *******************************************************************************************************
-PUBLIC fOpen
+; Function Open a file using mode.
+; EsxDosError EsxOpen(char *filename, uint8 mode);
 ; *******************************************************************************************************
-;   Function:   Open a file read for reading/writing
-;   In:     IX = filename
-;           B  = Open filemode
-;   ret     A  = handle, 0 on error
+	PUBLIC EsxOpen, _EsxOpen
+_EsxOpen:
+			pop	hl	; return addr
+			pop	ix	; filename
+			dec	sp
+			pop	bc	; b = mode
+			push	hl	; return addr
 ; *******************************************************************************************************
-fOpen:      
-			push	hl
-			push	ix
-			pop	hl
+;   Function:   Open a file read for reading/writing, call EsxGetDrive first, to page in rom and get the drive
+;   In:		IX = filename
+;		B  = Open filemode
+;   ret		L = EsxDosError
+; *******************************************************************************************************
+EsxOpen:
+			xor		a
+			ld		(fileHandle),a
 			ld		a,(DefaultDrive)
 			rst		$08
 			db		F_OPEN
-			pop	hl
+			jr		nc, @Okay
+			ld		l,a
+			ret
+@Okay:
+			ld		(fileHandle),a
+			ld		l,0
 			ret
 
 
 ; *******************************************************************************************************
-PUBLIC fRead
+	PUBLIC EsxRead, _EsxRead
+; *******************************************************************************************************
+; Function Read the opened file into memory.
+; EsxDosError EsxRead(uint8 *memory, int16 length);
+; *******************************************************************************************************
+_EsxRead:
+			pop	hl	; return addr
+			pop	ix	; memory
+			pop	bc	; length
+			push	hl	; return addr
 ; *******************************************************************************************************
 ;   Function    Read bytes from the open file
-;   In:     ix  = address to read into
-;           bc  = amount to read
-;   ret:        carry set = error
+;   In:		ix  = address to read into
+;		bc  = amount to read
+;   ret:	carry set = error
 ; *******************************************************************************************************
-fRead:
-			or		a																; is it zero?
-			ret		z																; if so return        
-			push	hl
-			push		ix
-			pop		hl
+EsxRead:
+			ld		a,(fileHandle)
 			rst		$08
 			db		F_READ
-			pop	hl
+			jr		nc, @Okay
+			ld		l,a
+			ret
+@Okay:
+			ld		l,0
 			ret
 
 
 ; *******************************************************************************************************
-PUBLIC fWrite
+	PUBLIC EsxWrite, _EsxWrite
+; *******************************************************************************************************
+; Function Write memory to opened.
+; EsxDosError EsxWrite(uint8 *memory, int16 length);
+; *******************************************************************************************************
+_EsxWrite:
+			pop	hl	; return addr
+			pop	ix	; memory
+			pop	bc	; length
+			push	hl	; return addr
 ; *******************************************************************************************************
 ;   Function    Read bytes from the open file
-;   In:         A = file handle
+;   In:         A = file fileHandle
 ;		IX  = address to write from
 ;               BC  = amount to write
 ;   ret:        Carry set = error
 ;		BC = bytes actually written
 ; *******************************************************************************************************
-fWrite:
-			or		a		; do we have a file handle?
-			ret		z		; if no then exit
-			push	hl
-			push	ix
-			pop	hl
+EsxWrite:
+			ld		a,(fileHandle)
 			rst		$08
 			db		F_WRITE
-			pop	hl
+			jr		nc, @Okay
+			ld		l,a
+			ret
+@Okay:
+			ld		l,0
 			ret
 
 
 ; *******************************************************************************************************
-PUBLIC fClose
+	PUBLIC EsxClose, _EsxClose
 ; *******************************************************************************************************
-;   Function:   Close open file
-;   In:     a  = handle
-;   ret     a  = handle, 0 on error
+;   Function:   Close an open file
+;   OUT:
+;		cf set on error and A=error code
 ; *******************************************************************************************************
-fClose:     
-			or		a																; is it zero?
-			ret		z																; if so return        
+_EsxClose:
+EsxClose:
+			ld		a,(fileHandle)
+			ld		b,a
+			xor		a
+			ld		(fileHandle),a
+			ld		a,b
 			rst		$08
 			db		F_CLOSE
+			jr		nc, @Okay
+			ld		l,a
+			ret
+@Okay:
+			ld		l,0
 			ret
 
 
 ; *******************************************************************************************************
+;   uint32 EsxSeek(uint32 bytes, uint8 mode)
+; *******************************************************************************************************
+	PUBLIC EsxSeek, _EsxSeek
+_EsxSeek:
+			pop	hl	; return address
+			pop	bc
+			pop	de
+			dec		sp
+			ex	(sp),hl
+			ld		l,h
+; *******************************************************************************************************
 ;   Function    Read bytes from the open file
-;   In:         a   = file handle
+;   In:         a   = file fileHandle
 ;               L   = Seek mode (0=start, 1=rel, 2=-rel)
 ;               BCDE = bytes to seek
 ;   ret:        BCDE = file pos from start
 ; *******************************************************************************************************
-PUBLIC fSeek
-fSeek:
-			push	ix
-			push	hl
+EsxSeek:
+
+			ld		a,(fileHandle)
 			rst		$08
 			db		F_SEEK
-			pop	hl
-			pop	ix
+			jr		nc, @Okay
+			ld		l,a
+			ret
+@Okay:
+			ld		l,0
 			ret
 
 
 ; *******************************************************************************************************
 ;   Function:   Get file stats
-;   In:         a  = handle
+;   In:         a  = fileHandle
 ;   ret         a  = error code
 ;               fc = 1 error
 ;               fc = 0 no error
@@ -2402,9 +2092,9 @@ fStat:
 			or		a																; is it zero?
 			ret		z																; if so return     
 			push		ix
-			ld		ix,FileStatsBuffer 
+			ld		ix,_FileStatsBuf 
 			rst		$08
-			db		F_STAT
+			db		F_FSTAT
 			pop		ix
 			ret
 
@@ -2472,17 +2162,17 @@ _Load:
 			NextReg		$50,255																; make sure ROM is paged in
 			NextReg		$51,255
 
-			call		GetSetDrive															; need to do this each time?!?!?
+			call		EsxGetDrive															; need to do this each time?!?!?
 
 
 			ld		ix,Load_Filename
 			ld		b,FA_READ															; mode OPEN for reading
-			call		fOpen
+			call		EsxOpen
 			jp		c,@error_opening														; carry set? so there was an error opening and A=error code
-			and		a																; was file handle 0?
+			and		a																; was file fileHandle 0?
 			jp		z,@error_opening														; of so there was an error opening.
 
-			ld		(handle),a															; remember handle
+			ld		(fileHandle),a															; remember fileHandle
 			call		fStat																; get file STATS into the fStat buffer - date/time/size etc
 
         ; -------------------------
@@ -2520,11 +2210,11 @@ _Load:
 			ld		ix,(Load_Offset)
 			ld		de,LOADING_BASE_ADD
 			add		ix,de
-			ld		a,(handle)
+			ld		a,(fileHandle)
 
-			call		fRead																; read data from A to address IX of length BC                
+			call		EsxRead																; read data from A to address IX of length BC                
 			jr		c,@error_reading
-			ld		(FileStatsBuffer+2),bc														; number of bytes actually read....
+			ld		(_FileStatsBuf+2),bc														; number of bytes actually read....
 
 
 
@@ -2573,8 +2263,8 @@ _Load:
 
 
 @LoadedAll:
-			ld		a,(handle)
-			call		fClose																; close file
+			ld		a,(fileHandle)
+			call		EsxClose																; close file
 			jr		c,@error_closing
 
 			jp		@skiperrors
@@ -2619,15 +2309,14 @@ RestoreBanksFast:
 ; ******************************************************************************************************************************
 ; ******************************************************************************************************************************
 ; ******************************************************************************************************************************
-DefaultDrive:		db		0																; Current Drive
-handle:			db		0																; current open file handle
-Load_Bank:		db		0																; Loading bank
-Load_Offset:		dw		0																; Loading bank
-Load_Filename:		ds		MAX_FILENAME_LEN														; space to copy the filename - incase it's now under the ROM. "data/test.txt",0
-Bank50:			db		0																; Remmeber Bank 50
-Bank51:			db		0																; Remmeber Bank 51
-LoadBankWorkspace:	db		0																; Rememebr Bank 56
-_PrintOffset:		db		0																; offset from $4000
+DefaultDrive:		db		0			; Current Drive
+fileHandle:		db		0			; current open file fileHandle
+Load_Bank:		db		0			; Loading bank
+Load_Offset:		dw		0			; Loading bank
+Load_Filename:		ds		MAX_FILENAME_LEN	; space to copy the filename - incase it's now under the ROM. "data/test.txt",0
+Bank50:			db		0			; Remmeber Bank 50
+Bank51:			db		0			; Remmeber Bank 51
+LoadBankWorkspace:	db		0			; Rememebr Bank 56
 
 
 ;   +0(1) '*'
@@ -2637,42 +2326,42 @@ _PrintOffset:		db		0																; offset from $4000
 ;   +5(2) datestamp (MS-DOS format)
 ;   +7(4) file size in bytes
 TempBuffer:		ds		64  
-			defc		FileStatsBuffer = TempBuffer													;              ; 11 byte buffer
-			defc		BytesLeftToLoad = FileStatsBuffer+7
-			defc		BytesLeftInBank = FileStatsBuffer
-			defc		BytesToRequest = FileStatsBuffer+2
-			defc		PrintCoords = FileStatsBuffer
+			defc		_FileStatsBuf = TempBuffer			; 11 byte buffer
+			defc		BytesLeftToLoad = _FileStatsBuf+7
+			defc		BytesLeftInBank = _FileStatsBuf
+			defc		BytesToRequest = _FileStatsBuf+2
+			defc		PrintCoords = _FileStatsBuf
 
 
 
 
 
 DMASpriteCopyProg:
-			db		$C3																; R6-RESET DMA
-			db		$C7																; R6-RESET PORT A Timing
-			db		$CB																; R6-SET PORT B Timing same as PORT A
+			db		$C3		; R6-RESET DMA
+			db		$C7		; R6-RESET PORT A Timing
+			db		$CB		; R6-SET PORT B Timing same as PORT A
 
-			db		$7D																; R0-Transfer mode, A -> B
+			db		$7D		; R0-Transfer mode, A -> B
 DMASpSrc:
-			dw		$1234																; R0-Port A, Start address               (source address)
+			dw		$1234		; R0-Port A, Start address               (source address)
 DMASpLen:    
-			dw		240																; R0-Block length                        (length in bytes)
+			dw		240		; R0-Block length                        (length in bytes)
 
-			db		$54																; R1-Port A address incrementing, variable timing
-			db		$02																; R1-Cycle length port A
+			db		$54		; R1-Port A address incrementing, variable timing
+			db		$02		; R1-Cycle length port A
       
-			db		$78																; R2-Port B address fixed, variable timing Write to a "PORT"
-			db		$02																; R2-Cycle length (2) port B
+			db		$78		; R2-Port B address fixed, variable timing Write to a "PORT"
+			db		$02		; R2-Cycle length (2) port B
       
-			db		$AD																; R4-Continuous mode  (use this for block tansfer)
+			db		$AD		; R4-Continuous mode  (use this for block tansfer)
 DMASpDest:
-			dw		$0057																; R4-Dest address (Sprite DATA)          (destination port)
+			dw		$0057		; R4-Dest address (Sprite DATA)          (destination port)
           
-			db		$82																; R5-Restart on end of block, RDY active LOW
+			db		$82		; R5-Restart on end of block, RDY active LOW
      
-			db		$CF																; R6-Load
-			db		$B3																; R6-Force Ready
-			db		$87																; R6-Enable DMA
+			db		$CF		; R6-Load
+			db		$B3		; R6-Force Ready
+			db		$87		; R6-Enable DMA
 ENDSPDMA:
 			defc		DMASPCOPYSIZE   = ENDSPDMA-DMASpriteCopyProg
 
@@ -2681,28 +2370,28 @@ ENDSPDMA:
 ; Writable DMA Program
 ; ******************************************************************************
 DMACopyProg:
-			db		$C3																; R6-RESET DMA
-			db		$C7																; R6-RESET PORT A Timing
-			db		$CB																; R6-SET PORT B Timing same as PORT A
+			db		$C3		; R6-RESET DMA
+			db		$C7		; R6-RESET PORT A Timing
+			db		$CB		; R6-SET PORT B Timing same as PORT A
         
-			db		$7D																; R0-Transfer mode, A -> B
-DMASrc:			dw		$0000																; R0-Port A, Start address      (source address)
-DMALen:			dw		6912																; R0-Block length           (length in bytes)
+			db		$7D		; R0-Transfer mode, A -> B
+DMASrc:			dw		$0000		; R0-Port A, Start address      (source address)
+DMALen:			dw		6912		; R0-Block length           (length in bytes)
         
-			db		$54																; R1-Port A address incrementing, variable timing
-			db		$02																; R1-Cycle length port A
+			db		$54		; R1-Port A address incrementing, variable timing
+			db		$02		; R1-Cycle length port A
                 
-			db		$50																; R2-Port B address fixed, variable timing
-			db		$02																; R2-Cycle length port B
+			db		$50		; R2-Port B address fixed, variable timing
+			db		$02		; R2-Cycle length port B
                 
-			db		$AD																; R4-Continuous mode  (use this for block tansfer)
-DMADest:		dw		$4000																; R4-Dest address           (destination address)
+			db		$AD		; R4-Continuous mode  (use this for block tansfer)
+DMADest:		dw		$4000		; R4-Dest address           (destination address)
                 
-			db		$82																; R5-Restart on end of block, RDY active LOW
+			db		$82		; R5-Restart on end of block, RDY active LOW
             
-			db		$CF																; R6-Load
-			db		$B3																; R6-Force Ready
-			db		$87																; R6-Enable DMA
+			db		$CF		; R6-Load
+			db		$B3		; R6-Force Ready
+			db		$87		; R6-Enable DMA
 ENDDMA:
 
 			defc		DMASIZE = ENDDMA-DMACopyProg
@@ -2734,30 +2423,30 @@ DMAFillDst:		DW 0		; Destination address
 ; ******************************************************************************
 PUBLIC DMACopyToReg
 DMACopyToReg:
-			db		$C3																;R6-RESET DMA
-			db		$C7																;R6-RESET PORT A Timing
-			db		$CB																;R6-SET PORT B Timing same as PORT A
+			db		$C3		;R6-RESET DMA
+			db		$C7		;R6-RESET PORT A Timing
+			db		$CB		;R6-SET PORT B Timing same as PORT A
 
-			db		$7D																;R0-Transfer mode, A -> B (%01 = transfer, %1xx = A->B)
+			db		$7D		;R0-Transfer mode, A -> B (%01 = transfer, %1xx = A->B)
 DMASrcAdd:
-			dw		$1234																;R0-Port A, Start address               (source address)
+			dw		$1234		;R0-Port A, Start address               (source address)
 DMASrcLen:
-			dw		240																;R0-Block length                    (length in bytes)
+			dw		240		;R0-Block length                    (length in bytes)
 
-			db		$54																;R1-Port A address incrementing, variable timing
-			db		$02																;R1-Cycle length port A
+			db		$54		;R1-Port A address incrementing, variable timing
+			db		$02		;R1-Cycle length port A
           
-			db		%01101000															;R2-Port B bit 3 = PORT dest, bit 6 = cycle len.
-			db		$02																;R2-Cycle length port B
+			db		%01101000	;R2-Port B bit 3 = PORT dest, bit 6 = cycle len.
+			db		$02		;R2-Cycle length port B
           
-			db		$AD																;R4-Continuous mode  (%01 Continuous, %11 Port Add Lo/Hi, %01 = $ad )
-			dw		$253B																;R4-Dest address
+			db		$AD		;R4-Continuous mode  (%01 Continuous, %11 Port Add Lo/Hi, %01 = $ad )
+			dw		$253B		;R4-Dest address
           
-			db		$82																;R5-Restart on end of block, RDY active LOW
+			db		$82		;R5-Restart on end of block, RDY active LOW
      
-			db		$CF																;R6-Load
-			db		$B3																;R6-Force Ready
-			db		$87																;R6-Enable DMA
+			db		$CF		;R6-Load
+			db		$B3		;R6-Force Ready
+			db		$87		;R6-Enable DMA
 DMACopyToReg_End:
 
 			defc		DMACOPPERSIZE = DMACopyToReg_End-DMACopyToReg
@@ -2768,73 +2457,6 @@ PUBLIC _Keys
 _Keys:			ds		40
 PUBLIC _RawKeys
 _RawKeys:		ds		8
-PUBLIC _RomFont
-_RomFont:		ds		0x300																; copy of the ROM font
-			incbin		"ROMFONT.FNT"
-
-            ; xxxxxxxx
-            ; yyyyyyyy
-            ; PPPP_XM_YM_R_X8/PR
-            ; V_E_NNNNNN
-            ; H_N6_T_XX_YY_Y8
-            ; +- 0_1_N6_XX_YY_PO
-            ; +- 0_1_N6_0000_PO
-
-PUBLIC _SpriteData
-_SpriteData:		ds		128*5																; raw sprite data
-
-PUBLIC _SpriteShape
-_SpriteShape:
-			db		$e3,$e3,$e3,$e3,$e3,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$ff,$ff,$e3,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$e3,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$ff,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$ff,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$ff,$ff,$ff,$e3,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$ff,$ff,$ff,$ff,$e3,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$e3,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$ff,$ff,$ff,$e3,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$ff,$ff,$e3,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$e3,$ff,$ff,$ff,$e3,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-
-			db		$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
-			db		$ff,$ff,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$ff,$ff
-			db		$ff,$00,$ff,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$ff,$00,$ff
-			db		$ff,$00,$00,$ff,$00,$00,$00,$00,$00,$00,$00,$00,$ff,$00,$00,$ff
-			db		$ff,$00,$00,$00,$ff,$00,$00,$00,$00,$00,$00,$ff,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$00,$ff,$00,$00,$00,$00,$ff,$00,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$00,$00,$ff,$00,$00,$ff,$00,$00,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$ff,$00,$00,$00,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$ff,$00,$00,$00,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$00,$00,$ff,$00,$00,$ff,$00,$00,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$00,$ff,$00,$00,$00,$00,$ff,$00,$00,$00,$00,$ff
-			db		$ff,$00,$00,$00,$ff,$00,$00,$00,$00,$00,$00,$ff,$00,$00,$00,$ff
-			db		$ff,$00,$00,$ff,$00,$00,$00,$00,$00,$00,$00,$00,$ff,$00,$00,$ff
-			db		$ff,$00,$ff,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$ff,$00,$ff
-			db		$ff,$ff,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$ff,$ff
-			db		$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff
-
-			db		$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$00,$00,$00,$00,$00,$00,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
-			db		$ff,$ff,$ff,$ff,$ff,$ff,$ff,$ff,$e3,$e3,$e3,$e3,$e3,$e3,$e3,$e3
 
 _EndKernel:
 

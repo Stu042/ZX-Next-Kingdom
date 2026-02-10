@@ -67,14 +67,14 @@ void GameSimYearInit(void) {
 }
 
 
-#ifdef DEBUG
+#ifdef IN_DEBUG
 	uint8 debugY;
 #endif
 
 
 
 void GameSimYearRun(void) {
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		debugY=0;
 		ClsL2(0);
 	#endif
@@ -83,7 +83,7 @@ void GameSimYearRun(void) {
 	doLand();
 	doGrain();
 	addIncreases();
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		if (debugY >= 21) {
 			Border(INK_RED);
 		}
@@ -106,7 +106,7 @@ static void doBirths(void) {
 	int32 lazyBirthsMax = lazyPop * fedOkayFrac / Frac;
 	int32 lazyBirths = rndRange32(0, lazyBirthsMax);
 	int32 naturalBirths = rndPerc32(Data.Population, 10);		// whole pop gets a chance of 10% increase
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "fedOkayFrac: ", fedOkayFrac);
 		PrintSimpleValue(128, GSY_DEBUGTEXTY(debugY++), valDebugCol, "lazyBirthsMax: ", lazyBirthsMax);
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "lazyBirths: ", lazyBirths);
@@ -119,7 +119,7 @@ static void doBirths(void) {
 static void doDeaths(void) {
 	int32 hungry = Data.Population - Data.GrainAte;
 	if (hungry > 0) {
-		Data.DeathsStarvation = rndRange32(0, (Data.Population - Data.GrainAte));	// the unfed are likely to die
+		Data.DeathsStarvation = rndRange32(0, hungry);	// the unfed are likely to die
 	} else {
 		Data.DeathsStarvation = 0;
 	}
@@ -159,7 +159,7 @@ static void doBandits(void) {
 	if (Data.BanditCount <= 0) {
 		Data.BanditCount = rndRange32(1, 10);
 	}
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "DeathsDefending: ", DeathsDefending);
 		PrintSimpleValue(128, GSY_DEBUGTEXTY(debugY++), valDebugCol, "BanditsKilled: ", BanditsKilled);
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY++), valDebugCol, "BanditHealthFrac: ", BanditHealthFrac);
@@ -182,7 +182,7 @@ static void doPop(void) {
 	Data.DeathsTotal += Data.DeathsStarvation + Data.DeathsNatural;
 	Data.PopIncrease = Data.Births - Data.DeathsTotal;
 	addPopTotals();
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "DeathsStarvation: ", DeathsStarvation);
 		PrintSimpleValue(128, GSY_DEBUGTEXTY(debugY++), valDebugCol, "DeathsNatural: ", DeathsNatural);
 	#endif
@@ -193,7 +193,7 @@ static void doDyke(void) {
 	Data.DykeNaturalDamage = rndPerc32(Data.DykeStateFrac, 10);		// dyke strength decreases every eyar
 	Data.DykeRepair = Data.PopOnWall * rndRange32(1, Frac * 4) / Data.LandSize;	// people repair wall (1 person per up to 4 acres)
 	Data.DykeStateFracIncrease = Data.DykeRepair - Data.DykeNaturalDamage;			// state of the dyke, add repair remove damage
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "DykeNaturalDamage: ", DykeNaturalDamage);
 		PrintSimpleValue(128, GSY_DEBUGTEXTY(debugY++), valDebugCol, "DykeRepair: ", DykeRepair);
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "DykeStateFracIncrease: ", DykeStateFracIncrease);
@@ -213,7 +213,7 @@ static void doLand(void) {
 	Data.LandIncrease = Data.LandReclaimed - Data.LandFlooded;
 	Data.TotalLandFlooded += Data.LandFlooded;
 	Data.TotalLandReclaimed += Data.LandReclaimed;
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "LandFlooded: ", LandFlooded);
 		PrintSimpleValue(128, GSY_DEBUGTEXTY(debugY++), valDebugCol, "landReclaimedMax: ", landReclaimedMax);
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "LandReclaimed: ", LandReclaimed);
@@ -243,7 +243,7 @@ static void doGrain(void) {
 	Data.TotalGrainGrown += Data.GrainGrown;
 	Data.TotalGrainFlooded += Data.GrainFlooded;
 
-	#ifdef DEBUG
+	#ifdef IN_DEBUG
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "grainGrownMax: ", grainGrownMax);
 		PrintSimpleValue(128, GSY_DEBUGTEXTY(debugY++), valDebugCol, "GrainGrown: ", GrainGrown);
 		PrintSimpleValue(0, GSY_DEBUGTEXTY(debugY), valDebugCol, "GrainFlooded: ", GrainFlooded);

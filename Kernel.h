@@ -12,7 +12,18 @@
 /////////////////////
 // defines
 
+#define MIN(a,b) ((a) < (b)? (a) : (b))
+
+#define DISPLAY_WIDTH (256)
+#define DISPLAY_HEIGHT (192)
+
+// bank8k page 2 to mem 0xe000
 #define BankKernel()	ZXN_NEXTREG_helper(0x57,2)
+
+//page in rom
+#define BankRom()	\
+			ZXN_NEXTREG_helper(0x50,255)	\
+			ZXN_NEXTREG_helper(0x51,255)
 
 #define SetCpu3Mhz()	NextReg(0x7, 1)
 #define SetCpu14Mhz()	NextReg(0x7, 2)
@@ -71,51 +82,85 @@
 
 
 typedef enum ESX_DOS_ERROR {
-	ESX_Ok = 256,
-	ESX_Eok = 257,
-	ESX_Nonsense = 258,
-	ESX_Stend = 3 + 256,
-	ESX_Wrtype = 4 + 256,
-	ESX_Noent = 5 + 256,
-	ESX_Io = 6 + 256,
-	ESX_Inval = 7 + 256,
-	ESX_Acces = 8 + 256,
-	ESX_Nospc = 9 + 256,
-	ESX_Nxio = 10 + 256,
-	ESX_Nodrv = 11 + 256,
-	ESX_Nfile = 12 + 256,
-	ESX_Badf = 13 + 256,
-	ESX_Nodev = 14 + 256,
-	ESX_Overflow = 15 + 256,
-	ESX_Isdir = 16 + 256,
-	ESX_Notdir = 17 + 256,
-	ESX_Exist = 18 + 256,
-	ESX_Path = 19 + 256,
-	ESX_Sys = 20 + 256,
-	ESX_Nametoolong = 21 + 256,
-	ESX_Nocmd = 22 + 256,
-	ESX_Inuse = 23 + 256,
-	ESX_Rdonly = 24 + 256,
-	ESX_Verify = 25 + 256,
-	ESX_Loadingko = 26 + 256,
-	ESX_Dirinuse = 27 + 256,
-	ESX_Mapramactive = 28 + 256,
-	ESX_Drivebusy = 29 + 256,
-	ESX_Fsunknown = 30 + 256,
-	ESX_Devicebusy = 31 + 256,
+	ESX_Ok = 0,
+	ESX_Eok = 1,
+	ESX_Nonsense = 2,
+	ESX_Stend = 3,
+	ESX_Wrtype = 4,
+	ESX_Noent = 5,
+	ESX_Io = 6,
+	ESX_Inval = 7,
+	ESX_Acces = 8,
+	ESX_Nospc = 9,
+	ESX_Nxio = 10,
+	ESX_Nodrv = 11,
+	ESX_Nfile = 12,
+	ESX_Badf = 13,
+	ESX_Nodev = 14,
+	ESX_Overflow = 15,
+	ESX_Isdir = 16,
+	ESX_Notdir = 17,
+	ESX_Exist = 18,
+	ESX_Path = 19,
+	ESX_Sys = 20,
+	ESX_Nametoolong = 21,
+	ESX_Nocmd = 22,
+	ESX_Inuse = 23,
+	ESX_Rdonly = 24,
+	ESX_Verify = 25,
+	ESX_Loadingko = 26,
+	ESX_Dirinuse = 27,
+	ESX_Mapramactive = 28,
+	ESX_Drivebusy = 29,
+	ESX_Fsunknown = 30,
+	ESX_Devicebusy = 31
 }EsxDosError;
+
+
+typedef enum FOPEN_MODE {
+	FOPEN_MODE_READ			= 0x01,			// request read access
+	FOPEN_MODE_WRITE		= 0x02,			// request write access
+	FOPEN_MODE_USE_HEADER		= 0x40,			// read/write +3DOS header
+	FOPEN_MODE_OPEN_EXIST		= 0x00,			// only open existing file
+	FOPEN_MODE_OPEN_CREATE		= 0x08,			// open existing or create file
+	FOPEN_MODE_CREATE_NOEXIST	= 0x04,			// create new file, error if exists
+	FOPEN_MODE_CREATE_TRUNC		= 0x0c			// create new file, delete existing
+}FOpenMode;
+
+
+typedef struct FILE_STATS_BUFFER {
+	uint8 Star;		// +0(1) '*';
+	uint8 Q;		// +1(1) $81;
+	uint8 Attr;		// +2(1) file attributes (MS-DOS format);
+	uint16 TimeStamp;	// +3(2) timestamp (MS-DOS format);
+	uint16 DateStamp;	// +5(2) datestamp (MS-DOS format);
+	uint32 FileSize;	// +7(4) file size in bytes
+}FileStatsBuffer;
+
+
+#define BUFFER_SIZE (32)
+
 
 
 /////////////////////
 // Global variables
 
+
+/// General text buffer, for itoa etc
+extern char Buffer[BUFFER_SIZE];
+
+extern char MadeBy[];
+extern char Version[8];
+
+
+// Buffer used by assembly functions fstat and stat
+extern FileStatsBuffer FileStatsBuf;
+
+
 extern	uint8		VBlank;
 extern	uint8		Port123b;
 extern	uint8		Keys[VK_NUM_KEYS];
 extern	uint8		RawKeys[8];
-extern	SHWSprite	SpriteData[128];
-extern	uint8		SpriteShape[512];
-extern	uint8		PrintOffset;			// offset from $4000 for 
 
 
 /////////////////////
@@ -124,12 +169,7 @@ extern	uint8		PrintOffset;			// offset from $4000 for
 
 // From .c
 
-extern uint8 DebounceKeys[VK_NUM_KEYS];
-
-extern void InitDebounce(void);
-extern void DebounceReadKeyboard(void);
-// extern void Render1Bpp(uint8 x, uint8 y, uint16 col, uint8* oneBpp);
-
+extern bool Debounce(uint8 key);
 extern void StringInput(char* buf, int totalBufSize);
 extern void NumberInput(char* buf, int totalBufSize);
 
@@ -141,25 +181,16 @@ extern void VBlankSwap(void);
 extern bool AnyKey(void);
 extern void HangForKey(void);
 
-
+extern void PrintVersion(void);
 
 
 // From .asm
 
-extern void	InitKernel(void);
 extern void	SetUpIRQs(void) __preserves_regs(b,c,d,e,h,l,iyl,iyh);
 extern void	WaitVBlank(void)  __preserves_regs(b,c,d,e,h,l,iyl,iyh);
 extern void	InitL2(void) __z88dk_fastcall __preserves_regs(d,e,iyl,iyh);
-extern void	CopySpriteData(void) __z88dk_callee;
-
-// Wipe all sprites
-extern void	WipeSprites(void) __z88dk_callee;
 
 extern void	Border(uint8 colour) __z88dk_fastcall __preserves_regs(b,c,d,e,h,l,iyl,iyh);
-
-// Attribute format: F_B_PPP_III
-extern void	ClsATTR(uint8 attrib) __z88dk_fastcall __preserves_regs(iyl,iyh);
-extern void	ClsULA(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 
 extern void	ClsL2(uint8 col) __z88dk_fastcall;
 extern void	ClsFirst4(uint8 col) __z88dk_fastcall;
@@ -167,12 +198,10 @@ extern void	ClsLast2(uint8 col) __z88dk_fastcall;
 
 extern void	SwapL2(void);
 
-extern void	InitSpriteData(void) __z88dk_callee;
 
 extern void	UploadCopper(uint8* pCopper, uint16 length)  __z88dk_callee __preserves_regs(d,e,iyl,iyh);
 extern void	DMACopy(uint16 src, uint16 dest, uint16 size) __z88dk_callee __preserves_regs(a,d,e,iyl,iyh);
 extern void	DMAFill(uint16 dst, uint16 len, uint8 val) __z88dk_callee __preserves_regs(a,d,e,iyl,iyh);
-extern void	UploadSprites(uint8 StartShape, uint8 NumberOfShapes, uint16* pShapeAddress ) __z88dk_callee __preserves_regs(iyl,iyh);
 extern void	ReadKeyboard(void) __z88dk_callee;
 
 extern void	PrintULA(uint8 x, uint8 y, char* text) __z88dk_callee __preserves_regs(iyl,iyh);
@@ -219,26 +248,19 @@ extern uint32 rndRange32(uint32 from, uint32 to);
 extern uint32 rndPerc32(uint32 val, uint32 perc);
 
 
+
 // //////////////////////////////////////////////////////
 // File system functions
 
-extern char **SaveGameErrorMsgPtr;
-extern uint8 SaveGame(uint8 *start, uint16 length) __z88dk_callee;
 
-// Set drive to default drive
-extern void GetSetDrive(void) __z88dk_fastcall;
+// Set drive to default drive, pages in rom as well
+extern EsxDosError EsxGetDrive(void) __z88dk_fastcall;
+extern EsxDosError EsxOpen(const char *filename, FOpenMode mode) __z88dk_callee __preserves_regs(iyl,iyh);
+extern EsxDosError EsxRead(uint8 *memory, int16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+extern EsxDosError EsxWrite(uint8 *memory, int16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+extern EsxDosError EsxClose(void) __z88dk_fastcall;
 
-// Return EsxDosError error or file handle
-extern EsxDosError OpenSaveGame(void) __z88dk_fastcall __preserves_regs(b, c, d, e, iyl,iyh);
-
-// Return EsxDosError error code
-extern EsxDosError CloseSaveGame(EsxDosError fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
-
-// Return EsxDosError error code
-extern EsxDosError SyncSaveGame(EsxDosError fileHandle) __z88dk_fastcall __preserves_regs(a, b, c, d, e, iyl,iyh);
-
-// Write data from addr of size length to valid filehandle
-extern uint16 WriteSaveGame(EsxDosError fileHandle, uint8* addr, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+extern EsxDosError FileStats(const char *filename) __z88dk_fastcall __preserves_regs(iyl,iyh);
 
 
 #endif	//__KERNEL_H__

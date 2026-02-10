@@ -1,6 +1,6 @@
 
 CC=zcc -v
-CFLAGS= +zxn -mz80n -vn -c -SO3 --list --lstcwd --c-code-in-asm --opt-code-size -clib=sdcc_iy -pragma-include:zpragma.inc --max-allocs-per-node300000
+CFLAGS= +zxn -mz80n -vn -c -SO2 --list --lstcwd --c-code-in-asm --opt-code-size -clib=sdcc_iy -pragma-include:zpragma.inc --max-allocs-per-node300000
 
 ODIR=obj
 LDIR=lib
@@ -9,9 +9,10 @@ LIBS=-lm
 
 
 OBJS =	obj/main.o obj/data.o obj/data_asm.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
-	obj/FrontEnd.o obj/FrontEndAsm.o \
+	obj/FrontEnd.o obj/FrontEndAsm.o obj/Score.o \
 	obj/GamePlay.o obj/GamePlayAsm.o obj/GamePlayAssignResources.o \
-	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYearDo.o obj/GameSimYearRender.o \
+	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYearDo.o \
+	obj/RenderPopChange.o obj/RenderGrainChange.o obj/RenderLandChange.o obj/RenderSummary.o obj/GameSimYearRender.o \
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
 	obj/NewBorn.o obj/GrainBundle.o obj/KingdomState.o obj/Starved.o \
 	obj/Scroll.o obj/Flood.o obj/Reclaimed.o obj/Population.o obj/LandPic.o \
@@ -23,7 +24,7 @@ kingdom.nex: $(OBJS)
 
 
 # Main program at $8000
-obj/main.o: 		main.c FrameWork.h Kernel.h FrontEnd.h GamePlay.h
+obj/main.o: 		main.c FrameWork.h Kernel.h FrontEnd.h GamePlay.h Score.h GameSimYear.h GameGrain.h GamePop.h
 			$(CC) $(CFLAGS) -o obj/main.o main.c
 
 obj/data.o:		data.c FrameWork.h Kernel.h
@@ -56,8 +57,6 @@ obj/GamePlay.o: GamePlay.c FrameWork.h Kernel.h
 obj/GamePlayAsm.o: GamePlayAsm.asm
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GamePlayAsm.o GamePlayAsm.asm	
 
-
-
 # Game Play, standard functions
 obj/GameStd.o: GameStd.c FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameStd.o GameStd.c
@@ -74,8 +73,16 @@ obj/GameGrain.o: GameGrain.c FrameWork.h Kernel.h
 obj/GameSimYearDo.o: GameSimYearDo.c FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameSimYearDo.o GameSimYearDo.c
 
-# Game Play, input grain assignement
-obj/GameSimYearRender.o: GameSimYearRender.c FrameWork.h Kernel.h
+# Game Play, show results
+obj/RenderPopChange.o: RenderPopChange.c FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/RenderPopChange.o RenderPopChange.c
+obj/RenderGrainChange.o: RenderGrainChange.c FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/RenderGrainChange.o RenderGrainChange.c
+obj/RenderLandChange.o: RenderLandChange.c FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/RenderLandChange.o RenderLandChange.c
+obj/RenderSummary.o: RenderSummary.c FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/RenderSummary.o RenderSummary.c
+obj/GameSimYearRender.o: GameSimYearRender.c FrameWork.h Kernel.h RenderPopChange.h RenderGrainChange.h RenderLandChange.h RenderSummary.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GameSimYearRender.o GameSimYearRender.c
 
 
@@ -83,6 +90,10 @@ obj/GameSimYearRender.o: GameSimYearRender.c FrameWork.h Kernel.h
 # Game Play, player setting resources
 obj/GamePlayAssignResources.o: GamePlayAssignResources.c FrameWork.h Kernel.h
 	$(CC) $(CFLAGS) --codesegPAGE_06_GAMEPLAY_SEG --constsegPAGE_06_GAMEPLAY_SEG -o obj/GamePlayAssignResources.o GamePlayAssignResources.c
+
+# Score
+obj/Score.o: Score.c Score.h data.h GameStd.h Kernel.h FrameWork.h
+	$(CC) $(CFLAGS) --codesegPAGE_26_SCORE_SEG --constsegPAGE_26_SCORE_SEG -o obj/Score.o Score.c
 
 
 # Pics
@@ -105,7 +116,7 @@ obj/NewBorn.o: pics/NewBorn.asm
 	$(CC) $(CFLAGS) --codesegPAGE_50_NEWBORN_SEG --constsegPAGE_50_NEWBORN_SEG -o obj/NewBorn.o pics/NewBorn.asm
 
 obj/GrainBundle.o: pics/GrainBundle.asm
-	$(CC) $(CFLAGS) --codesegPAGE_54G_RAINBUNDLE_SEG --constsegPAGE_54G_RAINBUNDLE_SEG -o obj/GrainBundle.o pics/GrainBundle.asm
+	$(CC) $(CFLAGS) --codesegPAGE_54_GRAINBUNDLE_SEG --constsegPAGE_54_GRAINBUNDLE_SEG -o obj/GrainBundle.o pics/GrainBundle.asm
 
 obj/KingdomState.o: pics/KingdomState.asm
 	$(CC) $(CFLAGS) --codesegPAGE_58_KINGDOMSTATE_SEG --constsegPAGE_58_KINGDOMSTATE_SEG -o obj/KingdomState.o pics/KingdomState.asm

@@ -19,26 +19,23 @@ const uint8 valColLow = 252;
 const uint8 valDebugCol = 252;
 
 
-char buf[EDIT_VALUE_BUF_SIZE];
-
-
 
 #define stdTopTextPos(offset) ((uint8)(128 + offset))
 void PrintMainResources(void) {
 	PrintProp(80, stdTopTextPos(0), LoLightTextColour, "Total");
 	PrintProp(160, stdTopTextPos(0), LoLightTextColour, "Used");
 	PrintProp(230, stdTopTextPos(0), LoLightTextColour, "Year");
-	itoa(Data.Year, buf, 10);
-	PrintProp(230, stdTopTextPos(8), LoLightTextColour, buf);
+	itoa(Data.Year, Buffer, 10);
+	PrintProp(230, stdTopTextPos(8), LoLightTextColour, Buffer);
 
 	PrintValue(LeftSideMargin, 80, stdTopTextPos(8), StdTextColour, "Population", Data.Population);
 	PrintValue(LeftSideMargin, 80, stdTopTextPos(16), StdTextColour, "Land", Data.LandSize);
 	PrintValue(LeftSideMargin, 80, stdTopTextPos(24), StdTextColour, "Grain", Data.Grains);
 
-	ltoa(Data.UsedPop, buf, 10);
-	PrintResourceValue(160, stdTopTextPos(8), Data.Population, Data.UsedPop, buf);
-	ltoa(Data.UsedGrain, buf, 10);
-	PrintResourceValue(160, stdTopTextPos(24), Data.Grains, Data.UsedGrain, buf);
+	ltoa(Data.UsedPop, Buffer, 10);
+	PrintResourceValue(160, stdTopTextPos(8), Data.Population, Data.UsedPop, Buffer);
+	ltoa(Data.UsedGrain, Buffer, 10);
+	PrintResourceValue(160, stdTopTextPos(24), Data.Grains, Data.UsedGrain, Buffer);
 }
 
 
@@ -68,16 +65,16 @@ int8 FocusPrev(EditValue editFields[], int8 focus, int8 editFieldCount) {
 
 /// Deal with number input, allows moving focus between fields as well.
 bool KeyedInput(EditValue editFields[], int8 *focus, int8 editFieldCount) {
-	DebounceReadKeyboard();
-	if(Keys[VK_CAPS] != 0 && DebounceKeys[VK_7] != 0) {
+	ReadKeyboard();
+	if(Keys[VK_CAPS] != 0 && Debounce(VK_7)) {
 		*focus = FocusPrev(editFields, *focus, editFieldCount);
 		return false;
 	}
-	if(Keys[VK_CAPS] != 0 && DebounceKeys[VK_6] != 0) {
+	if(Keys[VK_CAPS] != 0 && Debounce(VK_6)) {
 		*focus = FocusNext(editFields, *focus, editFieldCount);
 		return false;
 	}
-	if (DebounceKeys[VK_ENTER] != 0) {
+	if (Debounce(VK_ENTER)) {
 		*focus = FocusNext(editFields, *focus, editFieldCount);
 		return *focus == 0;
 	}
@@ -112,17 +109,17 @@ void PrintResourceValue(uint8 x, uint8 y, int32 total, int32 value, char* str) {
 void PrintSimpleValue(uint8 x, uint8 y, uint16 col, char *header, int32 value) {
 	PrintProp(x, y, col, header);
 	uint8 length = PropPixelLength(header);
-	ltoa(value, buf, 10);
+	ltoa(value, Buffer, 10);
 	uint8 xv = length + x;
-	PrintProp(xv, y, col, buf);
+	PrintProp(xv, y, col, Buffer);
 }
 
 
 // Print a header and value on same row. Useful for displaying total, i.e. total population, etc
 void PrintValue(uint8 x, uint8 xv, uint8 y, uint16 col, char *header, int32 value) {
 	PrintProp(x, y, col, header);
-	ltoa(value, buf, 10);
-	PrintProp(xv, y, col, buf);
+	ltoa(value, Buffer, 10);
+	PrintProp(xv, y, col, Buffer);
 }
 
 

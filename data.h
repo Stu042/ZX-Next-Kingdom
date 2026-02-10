@@ -3,11 +3,26 @@
 #include "FrameWork.h"
 #include "Kernel.h"
 
+
+
+#define HI_SCORE_NAME_MAX_LEN (10)
+typedef struct HI_SCORE {
+	char Name[HI_SCORE_NAME_MAX_LEN];
+	int Years;
+}HiScore;
+
+
+#define HI_SCORES_COUNT (10)
+typedef struct HI_SCORES {
+	HiScore Scores[HI_SCORES_COUNT];
+}HiScores;
+
+
+
+
 typedef struct GAME_DATA {
 	char GameName[8];
 	char Version[8];
-
-	eGameState GameState;
 
 	int Year;
 	int32 Grains;
@@ -78,11 +93,21 @@ typedef struct GAME_DATA {
 	int32 TotalLandReclaimed;
 
 	uint8 unused[128];
-
 }GameData;
 
 
+extern const char GameName[8];
+extern const char GameVersion[8];
+extern const char SaveGameFilename[];
+
 extern GameData Data;
+extern HiScores PlayerHiScores;
+
+extern bool SaveGameExists;
+
+
+
+
 // strcpy(Data.GameName, "Kingdom");
 // strcpy(Data.Version, "0.1.001");
 

@@ -27,6 +27,7 @@
 		"startAutomatically": true,
 		"rootFolder": "${workspaceFolder}",
 		"load": "kingdom.nex",
+	        "preLaunchTask": "Build",
 		//"topOfStack": "__register_sp"
 	},
     {

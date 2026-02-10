@@ -33,25 +33,26 @@
         defc SpriteShapePort 		= 0x5b
 
         ; File system
-        defc M_GETSETDRV                = $89
-        defc F_OPEN                     = $9a
-        defc F_CLOSE                    = $9b
-        defc F_SYNC                     = $9c
-        defc F_READ                     = $9d
-        defc F_WRITE                    = $9e
-        defc F_SEEK                     = $9f
-        defc F_STAT                     = $a1                   ; get file stats - 11 byte buffer needed
-        defc FA_READ                    = $01
-        defc FA_APPEND                  = $06
-        defc FA_OVERWRITE               = $0C
+        defc M_GETSETDRV		= $89
+        defc F_OPEN			= $9a
+        defc F_CLOSE			= $9b
+        defc F_SYNC			= $9c
+        defc F_READ			= $9d
+        defc F_WRITE			= $9e
+        defc F_SEEK			= $9f
+        defc F_FSTAT			= $a1                   ; get open file stats - 11 byte buffer needed
+        defc FA_READ			= $01
+        defc FA_APPEND			= $06
+        defc FA_OVERWRITE		= $0c
+	defc F_STAT			= $ac                   ; get unopened file stats - 11 byte buffer needed
 
-	defc ESX_MODE_READ		= $01
-	defc ESX_MODE_WRITE		= $02
-	defc ESX_MODE_USE_HEADER	= $40
-	defc ESX_MODE_OPEN_EXIST	= $00
-	defc ESX_MODE_OPEN_CREATE	= $08
-	defc ESX_MODE_CREATE_NOEXIST	= $04
-	defc ESX_MODE_CREATE_TRUNC	= $0c
+	defc ESX_MODE_READ		= $01			; request read access
+	defc ESX_MODE_WRITE		= $02			; request write access
+	defc ESX_MODE_USE_HEADER	= $40			; read/write +3DOS header
+	defc ESX_MODE_OPEN_EXIST	= $00			; only open existing file
+	defc ESX_MODE_OPEN_CREATE	= $08			; open existing or create file
+	defc ESX_MODE_CREATE_NOEXIST	= $04			; create new file, error if exists
+	defc ESX_MODE_CREATE_TRUNC	= $0c			; create new file, delete existing
 
         defc MAX_FILENAME_LEN           = 64                    ; includes ,0 at the end
         defc LOADING_BANK               = $56                   ; the MMU register we're using

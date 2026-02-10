@@ -62,24 +62,19 @@ static void updatePic(void);
 
 
 void GamePopInit(void) {
-	Data.UsedGrain = 0;	// set to zero as print resources also prints this value
-
 	popIndex = 0;
 	oldIndex = -1;
-	PopInFieldsStr[0] = 0;
-	PopOnWallStr[0] = 0;
-	PopDefendingStr[0] = 0;
+	Data.UsedGrain = 0;	// set to zero as print resources also prints this value
 	Data.PopInFields = 0;
 	Data.PopOnWall = 0;
 	Data.PopDefending = 0;
 	Data.UsedPop = 0;
+	PopInFieldsStr[0] = 0;
+	PopOnWallStr[0] = 0;
+	PopDefendingStr[0] = 0;
 	UsedPopStr[0] = 0;
 	popErrorStr = NULL;
 	finished = false;
-	ClsL2(0);
-	SwapL2();
-	ClsL2(0);
-	SwapL2();
 }
 
 
@@ -108,9 +103,6 @@ static void input(void) {
 	finished = KeyedInput(editFields, &popIndex, POP_FIELDS_COUNT);
 	Data.UsedPop = EditValueCalcTotal(editFields, POP_FIELDS_COUNT);
 	ltoa(Data.UsedPop, UsedPopStr, 10);
-	if (finished) {
-		SetState(State_PopValidate);
-	}
 }
 
 
@@ -122,7 +114,6 @@ static void render(void) {
 		return;
 	}
 	updatePic();
-	//ClsLast2(0);
 	BlitLargeImageAt(128, ScrollPic, ScrollImageSize);
 	PrintMainResources();
 	PrintResourceValue(160, popTopTextPos(8), Data.Population, Data.UsedPop, UsedPopStr);

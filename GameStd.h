@@ -6,7 +6,7 @@
 
 
 
-#define EDIT_VALUE_BUF_SIZE (16)
+#define EDIT_VALUE_BUF_SIZE (MIN(BUFFER_SIZE, 16))
 #define Frac (256)
 
 

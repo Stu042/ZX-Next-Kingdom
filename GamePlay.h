@@ -6,10 +6,10 @@
 #include "GameStd.h"
 
 
-#define BankGamePlay()	ZXN_NEXTREG_helper(0x52, 6); ZXN_NEXTREG_helper(0x53, 7)
-
-
-#define EDIT_VALUE_BUF_SIZE (16)
+/* bank8k page 6 & 7 to mem 0x4000 & 0x6000  */
+#define BankGamePlay()	\
+			ZXN_NEXTREG_helper(0x52, 6);	\
+			ZXN_NEXTREG_helper(0x53, 7)
 
 
 

@@ -24,7 +24,7 @@
 #pragma output CLIB_MALLOC_HEAP_SIZE = 0
 
 //// BAlloc tables
-#pragma output CLIB_BALLOC_TABLE_SIZE = 32		// INCREASE if MEMPOOL increases!!!
+#pragma output CLIB_BALLOC_TABLE_SIZE = 0		// sg was 32 // INCREASE if MEMPOOL increases!!!
 
 //// do not create a heap for stdio (cannot open files)
 // sg #pragma output CLIB_STDIO_HEAP_SIZE = 0

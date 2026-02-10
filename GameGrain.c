@@ -105,9 +105,6 @@ static void input(void) {
 	finished = KeyedInput(editFields, &grainIndex, GRAIN_FIELDS_COUNT);
 	Data.UsedGrain = EditValueCalcTotal(editFields, GRAIN_FIELDS_COUNT);
 	ltoa(Data.UsedGrain, UsedGrainStr, 10);
-	if (finished) {
-		SetState(State_GrainValidate);
-	}
 }
 
 

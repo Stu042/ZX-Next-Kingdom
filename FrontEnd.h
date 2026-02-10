@@ -4,19 +4,8 @@
 #include "data.h"
 
 
-#define BankFrontEnd()	ZXN_NEXTREG_helper(0x52,8); ZXN_NEXTREG_helper(0x53,9)
-
-#define HI_SCORE_NAME_MAX_LEN (10)
-typedef struct HI_SCORE {
-	char Name[HI_SCORE_NAME_MAX_LEN];
-	int Years;
-}HiScore;
-
-
-#define HI_SCORES_COUNT (10)
-typedef struct HI_SCORES {
-	HiScore Scores[HI_SCORES_COUNT];
-}HiScores;
+#define BankFrontEnd()	ZXN_NEXTREG_helper(0x52,8);	/* bank8k page 8 & 9 to mem 0x4000 & 0x6000  */	\
+			ZXN_NEXTREG_helper(0x53,9)
 
 
 typedef enum START_GAME_CHOICE {
@@ -31,11 +20,12 @@ typedef enum START_GAME_CHOICE {
 extern void FE_Init(void);
 
 extern StartGameChoice FE_Run(void);
-extern void FE_ContinueGame(void);
+extern bool FE_ContinueGame(void);
 extern void FE_NewGame(void);
-extern void FE_LoadGame(void);
 extern void FE_ShowHiScore(void);
 extern void FE_Quit(void);
+extern void FE_SaveGame(void);
+extern void FE_Background(void);
 
 
 extern uint8 kingdom[];
