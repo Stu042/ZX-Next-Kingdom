@@ -9,7 +9,7 @@ LIBS=-lm
 
 
 OBJS =	obj/main.o obj/data.o obj/data_asm.o obj/Kernel.o obj/KernelAsm.o obj/IRQsAsm.o \
-	obj/FrontEnd.o obj/FrontEndAsm.o obj/Score.o \
+	obj/FrontEnd.o obj/FrontEndAsm.o obj/Score.o obj/ScoreASM.o obj/Fireworks.o obj/Sparks.o \
 	obj/GamePlay.o obj/GamePlayAsm.o obj/GamePlayAssignResources.o \
 	obj/GameStd.o obj/GamePop.o obj/GameGrain.o obj/GameSimYearDo.o \
 	obj/RenderPopChange.o obj/RenderGrainChange.o obj/RenderLandChange.o obj/RenderSummary.o obj/GameSimYearRender.o \
@@ -93,7 +93,13 @@ obj/GamePlayAssignResources.o: GamePlayAssignResources.c FrameWork.h Kernel.h
 
 # Score
 obj/Score.o: Score.c Score.h data.h GameStd.h Kernel.h FrameWork.h
-	$(CC) $(CFLAGS) --codesegPAGE_26_SCORE_SEG --constsegPAGE_26_SCORE_SEG -o obj/Score.o Score.c
+	$(CC) $(CFLAGS) --codesegPAGE_12_SCORE_SEG --constsegPAGE_12_SCORE_SEG -o obj/Score.o Score.c
+obj/ScoreASM.o: ScoreASM.asm
+	$(CC) $(CFLAGS) --codesegPAGE_12_SCORE_SEG --constsegPAGE_12_SCORE_SEG -o obj/ScoreASM.o ScoreASM.asm
+obj/Fireworks.o: Fireworks.c Fireworks.h Kernel.h FrameWork.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_12_SCORE_SEG --constsegPAGE_12_SCORE_SEG -o obj/Fireworks.o Fireworks.c
+obj/Sparks.o: Sparks.c Sparks.h Kernel.h
+	$(CC) $(CFLAGS) --codesegPAGE_12_SCORE_SEG --constsegPAGE_12_SCORE_SEG -o obj/Sparks.o Sparks.c
 
 
 # Pics

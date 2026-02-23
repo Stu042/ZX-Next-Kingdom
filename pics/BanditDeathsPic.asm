@@ -1,5 +1,4 @@
 	SECTION BANDITDEATH_SEG
-	        PUBLIC _BanditDeaths
         PUBLIC _BanditDeaths
 _BanditDeaths:
                 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

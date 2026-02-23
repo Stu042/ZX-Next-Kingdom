@@ -20,11 +20,24 @@
 //	Global Variables here
 //-------------------------------------
 
-const char GameName[8] = "Kingdom";
-const char GameVersion[8] = "0.1.001";
+const char *GameName = "Kingdom";
+const char *GameVersion = "0.01.01";
 const char SaveGameFilename[] = "savegame.king";
 
 GameData Data;
-HiScores PlayerHiScores;
+HiScores PlayerHiScores = {
+	.Scores = {
+		{ .Name = "LIZZIE II", .Years = 70 },
+		{ .Name = "JANAAB", .Years = 68 },
+		{ .Name = "JOEY", .Years = 67 },
+		{ .Name = "SMOKE JAG", .Years = 67 },
+		{ .Name = "LIL VIC", .Years = 63 },
+		{ .Name = "LIZ", .Years = 44 },
+		{ .Name = "AUGUSTUS", .Years = 40 },
+		{ .Name = "SEJONG", .Years = 31 },
+		{ .Name = "GEORGE VI", .Years = 15 },
+		{ .Name = "LIONHEART", .Years = 10 },
+	}
+};
 bool SaveGameExists;
 

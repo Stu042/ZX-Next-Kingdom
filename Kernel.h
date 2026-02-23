@@ -82,39 +82,44 @@
 
 
 typedef enum ESX_DOS_ERROR {
-	ESX_Ok = 0,
-	ESX_Eok = 1,
-	ESX_Nonsense = 2,
-	ESX_Stend = 3,
-	ESX_Wrtype = 4,
-	ESX_Noent = 5,
-	ESX_Io = 6,
-	ESX_Inval = 7,
-	ESX_Acces = 8,
-	ESX_Nospc = 9,
-	ESX_Nxio = 10,
-	ESX_Nodrv = 11,
-	ESX_Nfile = 12,
-	ESX_Badf = 13,
-	ESX_Nodev = 14,
-	ESX_Overflow = 15,
-	ESX_Isdir = 16,
-	ESX_Notdir = 17,
-	ESX_Exist = 18,
-	ESX_Path = 19,
-	ESX_Sys = 20,
-	ESX_Nametoolong = 21,
-	ESX_Nocmd = 22,
-	ESX_Inuse = 23,
-	ESX_Rdonly = 24,
-	ESX_Verify = 25,
-	ESX_Loadingko = 26,
-	ESX_Dirinuse = 27,
-	ESX_Mapramactive = 28,
-	ESX_Drivebusy = 29,
-	ESX_Fsunknown = 30,
-	ESX_Devicebusy = 31
+	ESX_Ok = 0,			// Unknown error (really!)
+	ESX_Eok = 1,			// OK
+	ESX_Nonsense = 2,		// Nonsense in esxDOS
+	ESX_Stend = 3,			// Statement end error
+	ESX_Wrtype = 4,			// Wrong file type
+	ESX_Noent = 5,			// No such file or dir
+	ESX_Io = 6,			// I/O error
+	ESX_Inval = 7,			// Invalid filename
+	ESX_Acces = 8,			// Access denied
+	ESX_Nospc = 9,			// Drive full
+	ESX_Nxio = 10,			// Invalid i/o request
+	ESX_Nodrv = 11,			// No such drive
+	ESX_Nfile = 12,			// Too many files open
+	ESX_Badf = 13,			// Bad file number
+	ESX_Nodev = 14,			// No such device
+	ESX_Overflow = 15,		// File pointer overflow
+	ESX_Isdir = 16,			// Is a directory
+	ESX_Notdir = 17,		// Not a directory
+	ESX_Exist = 18,			// Already exists
+	ESX_Path = 19,			// Invalid path
+	ESX_Sys = 20,			// Missing system
+	ESX_Nametoolong = 21,		// Path too long
+	ESX_Nocmd = 22,			// No such command
+	ESX_Inuse = 23,			// In use
+	ESX_Rdonly = 24,		// Read only
+	ESX_Verify = 25,		// Verify failed
+	ESX_Loadingko = 26,		// Sys file load error
+	ESX_Dirinuse = 27,		// Directory in use
+	ESX_Mapramactive = 28,		// MAPRAM is active
+	ESX_Drivebusy = 29,		// Drive busy
+	ESX_Fsunknown = 30,		// Unknown filesystem
+	ESX_Devicebusy = 31		// Device busy
 }EsxDosError;
+
+
+typedef uint16 FileError;
+#define FileErrorEsxDosError(x)	((EsxDosError)((x) & 31))
+#define FileErrorLocation(x)	((FileErrorLocation)((x) >> 8))
 
 
 typedef enum FOPEN_MODE {
@@ -170,7 +175,7 @@ extern	uint8		RawKeys[8];
 // From .c
 
 extern bool Debounce(uint8 key);
-extern void StringInput(char* buf, int totalBufSize);
+extern bool StringInput(char* buf, int totalBufSize);
 extern void NumberInput(char* buf, int totalBufSize);
 
 extern uint8 CentreText(const char *text);
@@ -186,29 +191,30 @@ extern void PrintVersion(void);
 
 // From .asm
 
-extern void	SetUpIRQs(void) __preserves_regs(b,c,d,e,h,l,iyl,iyh);
-extern void	WaitVBlank(void)  __preserves_regs(b,c,d,e,h,l,iyl,iyh);
-extern void	InitL2(void) __z88dk_fastcall __preserves_regs(d,e,iyl,iyh);
+extern void SetUpIRQs(void) __preserves_regs(b,c,d,e,h,l,iyl,iyh);
+extern void WaitVBlank(void)  __preserves_regs(b,c,d,e,h,l,iyl,iyh);
+extern void InitL2(void) __z88dk_fastcall __preserves_regs(d,e,iyl,iyh);
 
-extern void	Border(uint8 colour) __z88dk_fastcall __preserves_regs(b,c,d,e,h,l,iyl,iyh);
+extern void Border(uint8 colour) __z88dk_fastcall __preserves_regs(b,c,d,e,h,l,iyl,iyh);
 
-extern void	ClsL2(uint8 col) __z88dk_fastcall;
-extern void	ClsFirst4(uint8 col) __z88dk_fastcall;
-extern void	ClsLast2(uint8 col) __z88dk_fastcall;
+extern uint8* GetPixelAddress(uint8 x, uint8 y) __z88dk_callee;
+extern void ClsL2(uint8 col) __z88dk_fastcall;
+extern void ClsFirst4(uint8 col) __z88dk_fastcall;
+extern void ClsLast2(uint8 col) __z88dk_fastcall;
 
-extern void	SwapL2(void);
+extern void SwapL2(void);
 
 
-extern void	UploadCopper(uint8* pCopper, uint16 length)  __z88dk_callee __preserves_regs(d,e,iyl,iyh);
-extern void	DMACopy(uint16 src, uint16 dest, uint16 size) __z88dk_callee __preserves_regs(a,d,e,iyl,iyh);
-extern void	DMAFill(uint16 dst, uint16 len, uint8 val) __z88dk_callee __preserves_regs(a,d,e,iyl,iyh);
-extern void	ReadKeyboard(void) __z88dk_callee;
+extern void UploadCopper(uint8* pCopper, uint16 length)  __z88dk_callee __preserves_regs(d,e,iyl,iyh);
+extern void DMACopy(uint16 src, uint16 dest, uint16 size) __z88dk_callee __preserves_regs(a,d,e,iyl,iyh);
+extern void DMAFill(uint16 dst, uint16 len, uint8 val) __z88dk_callee __preserves_regs(a,d,e,iyl,iyh);
+extern void ReadKeyboard(void) __z88dk_callee;
 
-extern void	PrintULA(uint8 x, uint8 y, char* text) __z88dk_callee __preserves_regs(iyl,iyh);
-extern void	PrintL2(uint8 x, uint8 y, uint8 colour, char* text) __z88dk_callee;
+extern void PrintULA(uint8 x, uint8 y, char* text) __z88dk_callee __preserves_regs(iyl,iyh);
+extern void PrintL2(uint8 x, uint8 y, uint8 colour, char* text) __z88dk_callee;
 
-extern uint8	Load(char* pName, uint16 bank, uint16 offset) __z88dk_callee __preserves_regs(iyl,iyh);
-extern uint16	ReadNextReg(uint16 reg) __z88dk_callee __preserves_regs(iyl,iyh);
+extern uint8 Load(char* pName, uint16 bank, uint16 offset) __z88dk_callee __preserves_regs(iyl,iyh);
+extern uint16 ReadNextReg(uint16 reg) __z88dk_callee __preserves_regs(iyl,iyh);
 
 extern void BlitTransImage(uint8 x, uint8 y, uint16 transCol, uint8* imageSrc) __z88dk_callee __preserves_regs(iyl,iyh);
 extern void Render(uint8 x, uint8 y, uint8* imageSrc) __z88dk_callee __preserves_regs(iyl,iyh);
@@ -253,14 +259,20 @@ extern uint32 rndPerc32(uint32 val, uint32 perc);
 // File system functions
 
 
-// Set drive to default drive, pages in rom as well
+// Set drive to default drive
 extern EsxDosError EsxGetDrive(void) __z88dk_fastcall;
-extern EsxDosError EsxOpen(const char *filename, FOpenMode mode) __z88dk_callee __preserves_regs(iyl,iyh);
-extern EsxDosError EsxRead(uint8 *memory, int16 length) __z88dk_callee __preserves_regs(iyl,iyh);
-extern EsxDosError EsxWrite(uint8 *memory, int16 length) __z88dk_callee __preserves_regs(iyl,iyh);
-extern EsxDosError EsxClose(void) __z88dk_fastcall;
+// extern EsxDosError EsxOpen(const char *filename, FOpenMode mode) __z88dk_callee __preserves_regs(iyl,iyh);
+// extern EsxDosError EsxRead(uint8 *memory, int16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+// extern EsxDosError EsxWrite(uint8 *memory, int16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+// extern EsxDosError EsxClose(void) __z88dk_fastcall;
 
 extern EsxDosError FileStats(const char *filename) __z88dk_fastcall __preserves_regs(iyl,iyh);
+
+extern EsxDosError SaveData(const char *filename, FOpenMode mode, void *from, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+extern EsxDosError LoadData(const char *filename, FOpenMode mode, void *to, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
+
+extern uint16 CheckSaveGameExists(void);
+
 
 
 #endif	//__KERNEL_H__

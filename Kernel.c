@@ -38,7 +38,7 @@ static const char Characters[VK_NUM_KEYS] = {
 
 // internal protos
 
-static void chkKeys(char* buf, int usedBufSize);
+static bool chkKeys(char* buf, int usedBufSize);
 static void chkNumberKeys(char* buf, int usedBufSize);
 static bool chkDelete(char* buf, int usedBufSize);
 
@@ -94,13 +94,13 @@ bool Debounce(uint8 key) {
 
 
 
-void StringInput(char* buf, int totalBufSize) {
+bool StringInput(char* buf, int totalBufSize) {
 	int usedBufSize = strlen(buf);
 	if (usedBufSize >= (totalBufSize - 1)) {
 		chkDelete(buf, usedBufSize);
-		return;
+		return false;
 	}
-	chkKeys(buf, usedBufSize);
+	return chkKeys(buf, usedBufSize);
 }
 
 
@@ -137,20 +137,24 @@ void HangForKey(void) {
 
 
 
-static void chkKeys(char* buf, int usedBufSize) {
+static bool chkKeys(char* buf, int usedBufSize) {
 	if (chkDelete(buf, usedBufSize)) {
-		return;
+		return false;
 	}
 	for(uint8 i=0; i < VK_NUM_KEYS; i++) {
 		if (Debounce(i)) {
+			if (i == VK_ENTER) {
+				return true;
+			}
 			char c = Characters[i];
 			if (c != (char)255) {
 				buf[usedBufSize++] = c;
 				buf[usedBufSize] = 0;
-				return;
+				return false;
 			}
 		}
 	}
+	return false;
 }
 
 static bool chkDelete(char* buf, int usedBufSize) {

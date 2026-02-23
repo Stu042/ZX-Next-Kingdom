@@ -5,6 +5,7 @@
       "label": "Build",
       "type": "shell",
       "command": "make",
+      "args": ["-j 20"],
       "group": {
         "kind": "build",
         "isDefault": true

@@ -48,6 +48,7 @@ typedef	int32_t		int32;
 typedef	uint64_t	uint64;
 typedef	int64_t		int64;
 
+#define FRAC (256)
 
 
 typedef enum eGameStateType {
@@ -58,6 +59,7 @@ typedef enum eGameStateType {
 	State_ContinueGame,
 	State_NewGame,
 	State_ShowHiScore,
+	State_NewHiScore,
 
 	State_QuitFrontEnd,		// quit the front end
 

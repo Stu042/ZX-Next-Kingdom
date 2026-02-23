@@ -31,14 +31,15 @@ typedef struct EDIT_VALUE {
 // Start of text on left side
 #define LeftSideMargin (8)
 
-extern const uint8 StdTextColour;
-extern const uint8 LoLightTextColour;
-
-extern const uint8 valCol;
-extern const uint8 valHighlightCol;
-extern const uint8 valColLarge;
-extern const uint8 valColLow;
-extern const uint8 valDebugCol;
+#define StdTextColour (68)
+#define LoLightTextColour (68)
+#define valCol (68)
+#define valHighlightCol (252)
+#define valColLarge (224)
+#define valColLow (252)
+#define valDebugCol (252)
+#define MenuStdGameCol (240)
+#define MenuInActiveGameCol (33)
 
 
 /////////////////////

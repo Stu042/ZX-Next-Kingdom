@@ -36,6 +36,7 @@ static eGameState GameState;
 //  Handle the main loop and state changes
 // ****************************************************************************************
 void MainLoop(void) {
+	BREAK;
 	while (1) {
 		switch (GameState) {		// Do game states
 			case State_ScoreInit:
@@ -188,6 +189,15 @@ void MainLoop(void) {
 				SetState(State_ScoreInit);
 				break;
 
+			case State_NewHiScore:
+				BankScore();
+				if (SC_NewHiScore()) {
+					SetState(State_ShowHiScore);
+				} else {
+					SetState(State_ScoreInit);
+				}
+				break;
+
 			default:
 				SetState(State_ScoreInit);
 				break;
@@ -199,7 +209,6 @@ void MainLoop(void) {
 // ************************************************************************************************************************
 //  Main program start
 // ************************************************************************************************************************
-
 int main(void) {
 	intrinsic_label(Main_Label);
 	SetCpu14Mhz();
@@ -209,16 +218,17 @@ int main(void) {
 	NextReg(0x4b, 0xe3);	// sprite transparency
 	SetTransparencyColourFallback(0xe3);
 	BankKernel();		// page in kernel
+	#ifdef IN_EMU		// prepare filesystem if NOT using emulator
+	#else
+		EsxGetDrive();
+	#endif
 	SetUpIRQs();
 	XorShiftRndSeed();
 	XorShiftRndSeed32();
 	InitL2();
 	Border(INK_BLACK);
-	ClsL2(0);
-	SwapL2();
-	ClsL2(0);
-	SwapL2();
 	SetState(State_ScoreInit);
 	MainLoop();
 	return 0;
 }
+

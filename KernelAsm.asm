@@ -73,11 +73,10 @@ _SwapL2:
 PUBLIC _Border, Border
 _Border:
 			ld		a,l
-
 ; ************************************************************************
 ;
-;   Function:   Clear the spectrum attribute screen
-;   In:     A = colour
+;   Function:   Set border colour
+;   In:     A = colour (Only uses ink colour)
 ;
 ;   Format: F_B_PPP_III
 ;
@@ -145,9 +144,9 @@ screen_banks:		DB 0				; LSB: The visible screen
 ;
 ;===========================================================================
 	PUBLIC _ClsLast2, ClsLast2
-ClsLast2:
-			ld 	E, L			; Get the colour from HL
 _ClsLast2:
+			ld 	E, L			; Get the colour from HL
+ClsLast2:
 			ld	A,(screen_banks+1)	; Get the offscreen screen bank
 			add	a,4			; get first of last 2 banks
 			ld	d,a
@@ -159,9 +158,9 @@ _ClsLast2:
 ;
 ;===========================================================================
 	PUBLIC _ClsFirst4, ClsFirst4
-ClsFirst4:
-			ld 	E, L			; Get the colour from HL
 _ClsFirst4:
+			ld 	E, L			; Get the colour from HL
+ClsFirst4:
 			ld	A,(screen_banks+1)	; Get the offscreen screen bank
 			ld	d,a
 			ld 	B,4
@@ -177,27 +176,27 @@ _ClsFirst4:
 PUBLIC _UploadCopper, UploadCopper
 _UploadCopper:
 UploadCopper:
-			pop		hl																; get return address
-			pop		bc																; get src
+			pop		hl						; get return address
+			pop		bc						; get src
 			ld		(DMASrcAdd),bc
-			pop		bc																; get size
+			pop		bc						; get size
 			ld		(DMASrcLen),bc
-			push		hl																; push return address back
+			push		hl						; push return address back
 
-			xor		a																; 
+			xor		a						; 
 			NextReg		$61,a																; reset copper address
-			NextReg		$62,a																; Stop copper - copper address upper bits
+			NextReg		$62,a						; Stop copper - copper address upper bits
 
         ; now select the copper "data" port
 			ld		bc,$243b
 			ld		a,$60
 			out		(c),a
 
-			ld		hl,DMACopyToReg															; 10
-			ld		bc,DMACOPPERSIZE*256 + Z80DMAPORT												; 10
-			otir																		; 21*20  + 240*4
-
+			ld		hl,DMACopyToReg					; 10
+			ld		bc,DMACOPPERSIZE*256 + Z80DMAPORT		; 10
+			otir								; 21*20  + 240*4
 			ret
+
 
 ; ******************************************************************************
 ; Function: DMACopy
@@ -207,18 +206,18 @@ UploadCopper:
 ; ******************************************************************************
 PUBLIC _DMACopy, DMACopy
 _DMACopy:
-			pop		hl																; get return address
-			pop		bc																; get src
+			pop		hl						; get return address
+			pop		bc						; get src
 			ld		(DMASrc),bc
-			pop		bc																; get dest
+			pop		bc						; get dest
 			ld		(DMADest),bc
-			pop		bc																; get size
+			pop		bc						; get size
 			ld		(DMALen),bc
-			push		hl																; push return address back
+			push		hl						; push return address back
 
 DoDMACopy:
-			ld		hl,DMACopyProg                  
-			ld		bc,DMASIZE*256 + Z80DMAPORT 
+			ld		hl,DMACopyProg
+			ld		bc,DMASIZE*256 + Z80DMAPORT
 			otir
 			ret
 
@@ -344,7 +343,7 @@ BlitLargeImage:
 			djnz	@nextBank
 			ret
 
-;; GetPixelAddressMemBankOnscreen
+; DoubleBlitLargeImage
 	PUBLIC _DoubleBlitLargeImage, DoubleBlitLargeImage
 _DoubleBlitLargeImage:
 			pop	hl		; return addr
@@ -431,9 +430,11 @@ Render:
 			ld	iy,ImageData
 			ld	(iy+0),b		; save pos y
 			ld	(iy+1),c		; save pos x
-			ld	a,(de) : inc de
+			ld	a,(de)
+			inc 	de
 			ld	(iy+3),a		; save width
-			ld	a,(de) : inc de
+			ld	a,(de)
+			inc 	de
 			ld	(iy+2),a		; save height
 			ld	c,0			; get image height
 			ld	b,a
@@ -552,8 +553,12 @@ Blit1BppImage:
 			ret
 
 
+
 PUBLIC _GetPixelAddress, GetPixelAddress
-	_GetPixelAddress = GetPixelAddress
+_GetPixelAddress:
+			pop	hl
+			pop	bc
+			push	hl
 ; ******************************************************************************
 ;   GetPixelAddress(X, Y)
 ; Get pixel position
@@ -561,7 +566,7 @@ PUBLIC _GetPixelAddress, GetPixelAddress
 ;   B: Y coordinate
 ;   C: X coordinate
 ; Returns:
-;  HL: Address in memory (between 0x0000 and 0x1FFF)
+;  HL: Address in memory (from 0x0000 to 0x1FFF inclusive)
 ;   A is destroyed, BC remain the same, Result in HL
 ; ******************************************************************************
 GetPixelAddress:
@@ -835,7 +840,7 @@ PropPixelLength:
 ; ******************************************************************************
 ; void PrintProp(uint8 x, uint8 y, uint8 col, char *text)
 ; ******************************************************************************
-			defc	CHAR_SPACE_WIDTH = 4
+			defc	CHAR_SPACE_WIDTH = 3
 	PUBLIC _PrintProp, PrintProp
 _PrintProp:
 			pop	de	; return addr
@@ -1022,12 +1027,12 @@ Bang:
 	db %01010000
 	db %10001000
 Plus:
-	db 5
+	db 6
 	db %00000000
 	db %00000000
 	db %00100000
 	db %00100000
-	db %11110000
+	db %11111000
 	db %00100000
 	db %00100000
 Comma:
@@ -1036,7 +1041,7 @@ Comma:
 	db %00000000
 	db %00000000
 	db %00000000
-	db %01000000
+	db %00000000
 	db %01000000
 	db %10000000
 
@@ -1050,14 +1055,14 @@ Minus:
 	db %00000000
 	db %00000000
 Stop:
-	db 3
+	db 2
 	db %00000000
 	db %00000000
 	db %00000000
 	db %00000000
 	db %00000000
-	db %11000000
-	db %11000000
+	db %00000000
+	db %10000000
 Divide:
 	db 4
 	db %00000000
@@ -1446,7 +1451,7 @@ CapY:
 	db %10000000
 	db %10000000
 CapZ:
-	db 7
+	db 6
 	db %11111000
 	db %00010000
 	db %00100000
@@ -1870,7 +1875,168 @@ ReadNextRegsSYS:
 ; *******************************************************************************************************
 ;                               File System
 ; *******************************************************************************************************
+	PUBLIC BankRom
+; *******************************************************************************************************
+;   BankRom
+; IN:
+; OUT:
+;	No registers are changed
+;
+; *******************************************************************************************************
+BankRom:
+			push	af
+			ld		a,255		; page in rom
+			NEXTREG		MMU_0,a
+			NEXTREG		MMU_1,a
+			pop	af
+			ret
 
+; *******************************************************************************************************
+	PUBLIC _CheckSaveGameExists, CheckSaveGameExists
+; *******************************************************************************************************
+;   bool CheckSaveGameExists() __z88dk_fastcall __preserves_regs(iyl,iyh);
+;
+; *******************************************************************************************************
+GameName:		db "Kingdom"
+GameVersion:		db "0.01.01"
+SaveGameFilename:	db "savegame.king", 0
+
+_CheckSaveGameExists:
+; *******************************************************************************************************
+;   CheckSaveGameExists
+; IN:
+; OUT:
+;	L = 1 if save game exists else 0
+;
+; *******************************************************************************************************
+CheckSaveGameExists:
+			call		BankRom
+			ld		ix,SaveGameFilename
+			ld		b,ESX_MODE_OPEN_EXIST + ESX_MODE_READ
+			ld		de,TempBuffer
+			ld		hl,17
+			call		LoadData
+			ld		a,l
+			and		a
+			jp		nz,@notExist	; if L != 0 then no save game
+		; check first 16 chars are GameName then GameVersion
+			ld		b,7
+			ld		de,GameName
+			ld		hl,TempBuffer
+@loop:
+			ld		a,(de)
+			inc		de
+			cpi
+			jr		nz,@notExist
+			djnz		@loop
+			inc		hl	; skip the null char
+			ld		de,GameVersion
+			ld		b,7
+@loop2:
+			ld		a,(de)
+			inc		de
+			cpi
+			jr		nz,@notExist
+			djnz		@loop2
+			ld		a,(de)	; check StillAlive, if == 0 the dead
+			and		a
+			jr		z,@notExist
+			ld		l,1
+			ret
+@notExist:	; valid save game doesn't exist
+			ld		l,0
+			ret
+
+
+
+; *******************************************************************************************************
+	PUBLIC _LoadData
+; *******************************************************************************************************
+;   EsxDosError LoadData(const char *filename, FOpenMode mode, void *from, uint16 length)
+;
+; *******************************************************************************************************
+_LoadData:
+			pop	hl	; return addr
+			pop	ix	; filename
+			dec	sp
+			pop	bc	; b = mode
+			pop	de	; from
+			ex	(sp),hl	; swap length with return addr
+; *******************************************************************************************************
+;   LoadData
+; IN:
+;	IX = filename
+;	b = mode
+;	de = to address
+;	hl = length
+; OUT:
+;	L = esx dos error
+;
+; *******************************************************************************************************
+LoadData:
+			push	de	; to
+			push	hl	; length
+			call		BankRom
+			call		EsxOpen
+			pop	bc	; length
+			pop	ix	; to
+			jr		c, @UnableToOpen
+			call		EsxRead
+			jr		c, @UnableToRead
+			call		EsxClose
+@UnableToOpen:
+			ret
+@UnableToRead:
+			push	hl	; save the error
+			call		EsxClose
+			pop	hl	; grab the error and add the location
+			ret
+
+
+
+; *******************************************************************************************************
+	PUBLIC _SaveData
+; *******************************************************************************************************
+;   EsxDosError SaveData(const char *filename, FOpenMode mode, void *from, uint16 length)
+;
+; *******************************************************************************************************
+
+_SaveData:
+			pop	hl	; return addr
+			pop	ix	; filename
+			dec	sp
+			pop	bc	; b = mode
+			pop	de	; from
+			ex	(sp),hl	; swap length with return addr
+; *******************************************************************************************************
+;   SaveData
+; IN:
+;	IX = filename
+;	b = mode
+;	de = from address
+;	hl = length
+; OUT:
+;	L = esx dos error - not yet
+;
+; *******************************************************************************************************
+SaveData:
+			call		BankRom
+			push	de	; from
+			push	hl	; length
+			call		EsxOpen
+			pop	bc	; length
+			pop	ix	; from
+			jr		c, @UnableToOpen
+			call		EsxWrite
+			jr		c, @UnableToWrite
+			call		EsxClose
+@UnableToOpen:
+			ret
+@UnableToWrite:
+			push	hl
+			call		EsxClose
+			pop	hl
+			ret
 
 
 
@@ -1911,16 +2077,16 @@ FileStats:
 	PUBLIC EsxGetDrive, _EsxGetDrive
 _EsxGetDrive:
 EsxGetDrive:
+			call		BankRom
 			xor		a			; set drive. 0 is default
 			ld		(DefaultDrive),a
 			rst		$08
 			db		M_GETSETDRV
-			jr		nc, @Okay
-			ld		l,a
-			ret
-@Okay:
+			jr		c, @Error
 			ld		(DefaultDrive),a
-			ld		l,0
+			xor		a
+@Error:
+			ld		l,a
 			ret
 
 
@@ -1947,13 +2113,13 @@ EsxOpen:
 			ld		a,(DefaultDrive)
 			rst		$08
 			db		F_OPEN
-			jr		nc, @Okay
+			jr		c, @Error
+			ld		(fileHandle),a
+			xor		a
+@Error:
 			ld		l,a
 			ret
-@Okay:
-			ld		(fileHandle),a
-			ld		l,0
-			ret
+
 
 
 ; *******************************************************************************************************
@@ -1977,12 +2143,12 @@ EsxRead:
 			ld		a,(fileHandle)
 			rst		$08
 			db		F_READ
-			jr		nc, @Okay
+			jr		c, @Error
+			xor		a
+@Error:
 			ld		l,a
 			ret
-@Okay:
-			ld		l,0
-			ret
+
 
 
 ; *******************************************************************************************************
@@ -2008,11 +2174,10 @@ EsxWrite:
 			ld		a,(fileHandle)
 			rst		$08
 			db		F_WRITE
-			jr		nc, @Okay
+			jr		c, @Error
+			xor		a
+@Error:
 			ld		l,a
-			ret
-@Okay:
-			ld		l,0
 			ret
 
 
@@ -2032,11 +2197,10 @@ EsxClose:
 			ld		a,b
 			rst		$08
 			db		F_CLOSE
-			jr		nc, @Okay
+			jr		c, @Error
+			xor		a
+@Error:
 			ld		l,a
-			ret
-@Okay:
-			ld		l,0
 			ret
 
 
@@ -2053,8 +2217,7 @@ _EsxSeek:
 			ld		l,h
 ; *******************************************************************************************************
 ;   Function    Read bytes from the open file
-;   In:         a   = file fileHandle
-;               L   = Seek mode (0=start, 1=rel, 2=-rel)
+;   In:         L   = Seek mode (0=start, 1=rel, 2=-rel)
 ;               BCDE = bytes to seek
 ;   ret:        BCDE = file pos from start
 ; *******************************************************************************************************
@@ -2099,208 +2262,6 @@ fStat:
 			ret
 
 
-; *******************************************************************************************************
-; Function: Will overwrite kernel
-; In:       
-; Out:      
-; *******************************************************************************************************
-PUBLIC SaveBanks
-SaveBanks:
-			ld		a,LOADING_BANK
-			call		ReadNextRegsSYS
-			ld		(LoadBankWorkspace),a
-
-SaveBanksFast:
-			ld		a,$50
-			call		ReadNextRegsSYS
-			ld		(Bank50),a
-			ld		a,$51
-			call		ReadNextRegsSYS
-			ld		(Bank51),a
-			ret
-
-
-; *******************************************************************************************************
-; Function: Will overwrite kernel - Load a whole file into memory   (confirmed working on real machine)
-; In:       Load(filename, bank, offset);
-; Out:      none
-; *******************************************************************************************************
-PUBLIC _Load
-_Load:  
-			pop		bc																; return address
-			ld		(Load_Offset),bc														; stash here for now
-
-        ; Copy filename, as it may be under the ROM and about to be banked out
-			pop		hl																; get Filename
-			ld		de,Load_Filename
-			ld		b,MAX_FILENAME_LEN-1														;
-@CountDone:
-			ld		a,(hl)
-			and		a
-			jr		z,@EndOfString
-			ld		(de),a
-			inc		hl
-			inc		de
-			djnz		@CountDone
-@EndOfString:
-			xor		a																; ,0 terminate
-			ld		(de),a
-			ld		bc,(Load_Offset)														; get return address back
-
-			pop		hl																; get bank (16bit for ease of access)
-			ld		a,l
-			ld		(Load_Bank),a															; store just the single byte
-			pop		hl
-			ld		(Load_Offset),hl														; store offset
-
-			push		bc																; push return back
-			push		ix																; remember IX as C uses it
-
-
-        ; Get bank 0 and 1
-			call		SaveBanks
-			NextReg		$50,255																; make sure ROM is paged in
-			NextReg		$51,255
-
-			call		EsxGetDrive															; need to do this each time?!?!?
-
-
-			ld		ix,Load_Filename
-			ld		b,FA_READ															; mode OPEN for reading
-			call		EsxOpen
-			jp		c,@error_opening														; carry set? so there was an error opening and A=error code
-			and		a																; was file fileHandle 0?
-			jp		z,@error_opening														; of so there was an error opening.
-
-			ld		(fileHandle),a															; remember fileHandle
-			call		fStat																; get file STATS into the fStat buffer - date/time/size etc
-
-        ; -------------------------
-        ; Loading Block loop
-        ; -------------------------
-@LoadingLoop:
-			ld		hl,$2000															; max size to load in a blob
-			ld		bc,(Load_Offset)														; get the offset
-			and		a																; clear carry
-			sbc		hl,bc																; Work out the number of bytes left in the bank
-			ld		(BytesLeftInBank),hl														; remember this (just use stats buffer as temp storage)
-        
-
-			ld		a,(BytesLeftToLoad+2)														; get 24bit high - if set, then fill the bank as we're >64k        
-			and		a
-			jr		nz,@FillBank
-			ld		bc,(BytesLeftToLoad)														; get file size left
-			and		a
-			sbc		hl,bc																; sub total size, if "negative" then we can fill the remainder of the bank
-			jr		c,@FillBank															; if bytes left, then file size (left) won't fill the bank - so use that
-			ld		bc,(BytesLeftToLoad)														; Get total bytes left in file
-			jr		@SkipFillBank
-@FillBank:
-			ld		bc,(BytesLeftInBank)														; get bytes left in buffer
-@SkipFillBank:
-			ld		(BytesToRequest),bc														; remember the number of bytes we're going to load
-
-
-
-        ; -------------------------
-        ; Now load the next block
-        ; -------------------------
-			ld		a,(Load_Bank)
-			NextReg		LOADING_BANK,a															; bank in where we want to load to - this has been remembered
-			ld		ix,(Load_Offset)
-			ld		de,LOADING_BASE_ADD
-			add		ix,de
-			ld		a,(fileHandle)
-
-			call		EsxRead																; read data from A to address IX of length BC                
-			jr		c,@error_reading
-			ld		(_FileStatsBuf+2),bc														; number of bytes actually read....
-
-
-
-        ; -------------------------
-        ; Work out if we've more to load, and if so work out next bank/offset/ bytes left
-        ; -------------------------
-
-        ; subtract off the bytes loaded to how much is left (full 32bit subtract) - if zero, then we're done.
-			ld		hl,(BytesLeftToLoad)
-			and		a																; reset carry
-			sbc		hl,bc																; HL-(BC+C)
-			push		bc
-			ld		(BytesLeftToLoad),hl
-			ld		hl,(BytesLeftToLoad+2)														; HL-(0+C)
-			ld		bc,0
-			sbc		hl,bc
-			ld		(BytesLeftToLoad+2),hl        
-			pop		bc
-
-        ; are we at 0?
-			ld		a,h
-			or		l
-			ld		hl,(BytesLeftToLoad)
-			or		h
-			or		l
-			jr		z,@LoadedAll
-
-
-        ; More to load, so move on load address
-			ld		hl,(Load_Offset)
-			add		hl,bc
-			ld		a,h
-			and		$e0																; have we overflowed the bank?
-			jr		z,@NoOverlow
-			ld		a,(Load_Bank)															; overflow - so increment bank
-			inc		a
-			ld		(Load_Bank),a
-
-			ld		a,h																; wrap bank - hl should technically always be $0000 at this point
-			and		$1f
-			ld		h,a
-
-@NoOverlow:
-			ld		(Load_Offset),hl														; store new bank offset
-			jr		@LoadingLoop
-
-
-@LoadedAll:
-			ld		a,(fileHandle)
-			call		EsxClose																; close file
-			jr		c,@error_closing
-
-			jp		@skiperrors
-        ;pop     ix                     ; fall through instead (change if we get error codes etc)
-        ;jp      RestoreBanks
-
-;
-; On error, display error code an lock up so we can see it
-;
-@error_opening:
-@error_reading:     
-@error_closing:
-@NormalError:   
-			pop		ix
-			ld		a,255
-			jp		@skip
-@skiperrors:
-			pop		ix
-			xor		a
-@skip:
-			push		af
-RestoreBanks:
-        ; reset all the used banks
-			ld		a,(LoadBankWorkspace)
-			NextReg		LOADING_BANK,a
-RestoreBanksFast:
-			ld		a,(Bank50)
-			NextReg		$50,a
-			ld		a,(Bank51)
-			NextReg		$51,a
-			pop		af
-			ld		l,a
-			ret
-
-
-
 
 ; ******************************************************************************************************************************
 ; ******************************************************************************************************************************
@@ -2311,13 +2272,6 @@ RestoreBanksFast:
 ; ******************************************************************************************************************************
 DefaultDrive:		db		0			; Current Drive
 fileHandle:		db		0			; current open file fileHandle
-Load_Bank:		db		0			; Loading bank
-Load_Offset:		dw		0			; Loading bank
-Load_Filename:		ds		MAX_FILENAME_LEN	; space to copy the filename - incase it's now under the ROM. "data/test.txt",0
-Bank50:			db		0			; Remmeber Bank 50
-Bank51:			db		0			; Remmeber Bank 51
-LoadBankWorkspace:	db		0			; Rememebr Bank 56
-
 
 ;   +0(1) '*'
 ;   +1(1) $81
@@ -2327,12 +2281,6 @@ LoadBankWorkspace:	db		0			; Rememebr Bank 56
 ;   +7(4) file size in bytes
 TempBuffer:		ds		64  
 			defc		_FileStatsBuf = TempBuffer			; 11 byte buffer
-			defc		BytesLeftToLoad = _FileStatsBuf+7
-			defc		BytesLeftInBank = _FileStatsBuf
-			defc		BytesToRequest = _FileStatsBuf+2
-			defc		PrintCoords = _FileStatsBuf
-
-
 
 
 

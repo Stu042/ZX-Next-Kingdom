@@ -7,16 +7,7 @@
 #include "data.h"
 
 
-const uint8 StdTextColour = 68;
-const uint8 LoLightTextColour = 68;
 
-
-const uint8 valCol = 68;
-const uint8 valHighlightCol = 252;
-const uint8 valColLarge = 224;
-const uint8 valColLow = 252;
-
-const uint8 valDebugCol = 252;
 
 
 

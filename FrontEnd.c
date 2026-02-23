@@ -8,18 +8,14 @@
 #include <z80.h>
 #include <im2.h>
 #include <intrinsic.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdbool.h>
-#include <string.h>
 #include <input.h>
-#include <errno.h>
 
 #include "Kernel.h"
 #include "FrontEnd.h"
-#include "data.h"
 #include "GameStd.h"
-#include "data.h"
+
+
 
 #pragma output CRT_ORG_CODE = 0x4000
 
@@ -38,19 +34,22 @@ static void feBkg(void);
 
 
 
-
-
 //  ***************************************************************************************
 //  Init the Front End system
 //  State_FrontEndInit
 //  ***************************************************************************************
 void FE_Init(void) {
-	uint8 col = SaveGameExists ? 240 : 33;
+	#ifdef IN_EMU
+		bool saveGameExists = false;
+	#else
+		bool saveGameExists = CheckSaveGameExists();
+	#endif
+	uint8 col = saveGameExists ? MenuStdGameCol : MenuInActiveGameCol;
 	ClsL2(0);
 	FE_Background();
 	PrintProp(90, 48, col, "1. Continue Game");
-	PrintProp(90, 64, 240, "2. New Game");
-	PrintProp(90, 80, 240, "3. Hi Scores");
+	PrintProp(90, 64, MenuStdGameCol, "2. New Game");
+	PrintProp(90, 80, MenuStdGameCol, "3. Hi Scores");
 	PrintVersion();
 	VBlankSwap();
 }
@@ -63,7 +62,12 @@ void FE_Init(void) {
 //  ***************************************************************************************
 StartGameChoice FE_Run(void) {
 	ReadKeyboard();
-	if(SaveGameExists && Debounce(VK_1)) {
+	#ifdef IN_EMU
+		bool saveGameExists = false;
+	#else
+		bool saveGameExists = CheckSaveGameExists();
+	#endif
+	if(saveGameExists && Debounce(VK_1)) {
 		return SGC_ContinueGame;
 	}
 	if(Debounce(VK_2)) {
