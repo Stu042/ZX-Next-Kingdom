@@ -37,12 +37,14 @@ void GP_Init(void) {
 	VBlankSwap();
 }
 
-
-//  ***************************************************************************************
-//  GP_IsEndGame the game and cleanup
-//  ***************************************************************************************
-bool GP_IsEndGame(void) {
-	return (Data.LandSize <= 0 || Data.Population <= 0 || Data.Grains <= 0);
+void GP_ResetData(void) {
+	Data.PopInFields = 0;
+	Data.PopOnWall = 0;
+	Data.PopDefending = 0;
+	Data.UsedPop = 0;
+	Data.GrainAte = 0;
+	Data.GrainPlanted = 0;
+	Data.UsedGrain = 0;
 }
 
 

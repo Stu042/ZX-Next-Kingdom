@@ -246,3 +246,95 @@ int32 clamp(int32 val, int32 min, int32 max) {
 }
 
 
+
+
+#include <stdarg.h>
+#include <stdlib.h>
+
+
+void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...) {
+	PrintCharSetCol(col);
+	if (y > 191) {
+		return;
+	}
+	va_list args;
+	va_start(args, mess);
+	uint8 dx = 0;
+	const char *str = mess;
+	while(*str != 0) {
+		switch(*str) {
+			case '%':
+				str++;
+				if (*str == '%') {		// printing a %
+					dx = PrintChar(x, y, '%');
+				} else {			// printing a var argument
+					switch(*str) {
+						case 'b': {	// signed integer byte
+							int b = (int)va_arg(args, int8);
+							itoa(b, Buffer, 10);
+							break;
+						}
+						case 'B': {	// unsigned integer byte
+							unsigned int ub = (unsigned int)va_arg(args, uint8);
+							itoa(ub, Buffer, 10);
+							break;
+						}
+						case 'w': {	// signed 2 byte integer
+							int w = (int)va_arg(args, int16);
+							itoa(w, Buffer, 10);
+						}
+						case 'W': {	// unsigned 2 byte integer
+							unsigned int uw = (unsigned int)va_arg(args, uint16);
+							itoa(uw, Buffer, 10);
+							break;
+						}
+						case 'l': {	// signed 4 byte integer
+							int32 l = (int32)va_arg(args, int32);
+							ltoa(l, Buffer, 10);
+							break;
+						}
+						case 'L': {	// unsigned 4 byte integer
+							uint32 ul = (uint32)va_arg(args, uint32);
+							ltoa(ul, Buffer, 10);
+							break;
+						}
+					}
+					dx = PropPixelLength(Buffer);
+					if (x + dx < x) {
+						y += 8;
+						x = 0;
+						if (y <= 191) {
+							PrintProp(x, y, col, Buffer);
+						}
+					}
+				}
+				break;
+			case '\\':
+				str++;
+				if (*str == '\\') {
+					dx = PrintChar(x, y, '\\');
+				} else {
+					dx = 0;
+					if (*str == 'n') {
+						y += 8;
+						x = 0;
+					}
+				}
+				break;
+			default:
+				dx = PrintChar(x, y, *str);
+				break;
+		}
+		if (x + dx < x) {
+			y += 8;
+			x = 0;
+			if (y > 191) {
+				break;
+			}
+		} else {
+			x += dx;
+		}
+		str++;
+	}
+	va_end(args);
+}

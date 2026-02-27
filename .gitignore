@@ -13,3 +13,5 @@ build/
 obj/
 cspect_win.dat
 .tmp/disasm.list
+savegame.king
+hiscores.king

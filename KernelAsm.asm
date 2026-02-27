@@ -275,7 +275,7 @@ DMAFillInternal:	LD	HL,DMAFillProg
 _BlitLargeImageAt:
 			pop	de		; return addr
 			dec	sp
-			pop	bc		; B = bank count, C = start bank
+			pop	bc		; B = bank count
 			pop	hl
 			push	de		; restore return addr
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -868,15 +868,13 @@ PrintProp:
 			inc		hl
 			push	hl				; save next char ptr
 			sub		a,' '
-			; jr		nz,@NotSpace
-			; ld		a,CHAR_SPACE_WIDTH	; space is 4 pix wide
-			; add		a,c
-			; ld		c,a
-			; pop	hl
-			; jr		@NextChar
-@NotSpace:
 			jr		nc,@Printable
-			xor		a
+			jr		nz,@Printable
+			ld		a,CHAR_SPACE_WIDTH	; space is 4 pix wide
+			add		a,c
+			ld		c,a
+			pop	hl
+			jr		@NextChar
 @Printable:
 			ld		e,a			; E = char
 			ld		d,0			; mult char by 8 to get index into char data
@@ -889,18 +887,18 @@ PrintProp:
 			ld		a,(de)			; A = char width
 			add		a,c			; calc next x pos
 			ld		c,a
-			push	bc			; save next yx position
+			push	bc				; save next yx position
 			ld		a,(de)			; A = char width
 			ld		b,a			; B = char width
 			inc		de			; DE = first char row
 			ld		c,7			; C = 7 rows in total
 @nextRow:
-			push	bc			; C = row count B = char width
+			push	bc				; C = row count B = char width
 			ld		bc,(CharPosition)
 			inc		b
 			ld		(CharPosition),bc
 			call		GetPixelAddress		; HL = screen address
-			pop	bc			; C = row count B = char width
+			pop	bc				; C = row count B = char width
 			push	bc
 			ld		a,(PrintCol)
 			ld		c,a			; text pixel colour
@@ -916,10 +914,90 @@ PrintProp:
 			pop		bc			; B = row count C = char width
 			dec		c
 			jr		nz,@nextRow
-			pop	bc			; next yx position
-			pop	hl			; next char ptr
+			pop	bc				; next yx position
+			pop	hl				; next char ptr
 			jr		@NextChar
 
+
+; ******************************************************************************
+; void PrintProp(uint8 x, uint8 y, uint8 col, char *text)
+; ******************************************************************************
+	PUBLIC _PrintCharSetCol, PrintCharSetCol
+_PrintCharSetCol:
+			ld		a,l
+; ******************************************************************************
+; Function: Set colout PrintChar will use.
+; A = colour
+; ******************************************************************************
+PrintCharSetCol:
+			ld		(PrintCol),a
+			ret
+
+
+		
+; ******************************************************************************
+; uint8 PrintChar(uint8 x, uint8 y, char text)
+; ******************************************************************************
+	PUBLIC _PrintChar, PrintChar
+_PrintChar:
+			pop	de		; return addr
+			pop	bc
+			dec		sp
+			pop	af
+			push	de		; restore return addr
+
+; ******************************************************************************
+; Function: Print a single character using a proportional sized font.
+; IN:
+;   BC = yx position on screen
+;   A = character
+; OUT:
+;   L = char width
+; ******************************************************************************
+PrintChar:
+			ld		(CharPosition),bc
+			sub		a,' '
+			jr		nc,@Printable
+			ld		l,CHAR_SPACE_WIDTH	; space is 4 pix wide
+			ret
+@Printable:
+			ld		e,a			; E = char index
+			ld		d,0			; mult char index by 8 to get index into char data
+			sla		e
+			sla		e
+			rl		d
+			sla		e
+			rl		d
+			add		de,PropFontCharData	; DE = char width then char row data
+			ld		a,(de)			; L = char width
+			ld		l,a
+			push	hl				; save char width in L
+			inc		de			; DE = first char row
+			ld		b,7			; B = 7 rows in total
+			ld		a,(PrintCol)
+			ld		c,a			; C = text pixel colour
+
+@nextRow:	; DE = first char row, B = char width, C = 7, CharPosition & PrintCol filled
+			push	bc				; B = row count, C = colour
+			ld		bc,(CharPosition)
+			inc		b			; inc Y pos
+			ld		(CharPosition),bc
+			call		GetPixelAddress		; HL = screen address
+			pop	bc				; B = row count, C = colour
+			push	bc
+			ld		a,(de)			; first row to print
+@row:
+			sla		a
+			jr		nc, @nothingToPrint
+			ld		(hl),c			; draw colour if a pixel reqd
+@nothingToPrint:
+			inc		l
+			jr		nz,@row
+			inc		de			; next char data row
+			pop	bc				; B = row count
+			djnz		@nextRow
+			pop	hl				; char width in L
+			ret
 
 CharPosition:		dw 0
 
@@ -1841,17 +1919,17 @@ ExitKeyRead:
 ; ******************************************************************************
 PUBLIC _ReadNextReg
 _ReadNextReg:
-			pop		de																; get return address
+			pop		de		; get return address
 			pop		hl
 
         ; read MSB of raster first
-			ld		bc,$243b															; select NEXT register
+			ld		bc,$243b	; select NEXT register
 			out		(c),l
-			inc		b																; $253b to access (read or write) value
+			inc		b		; $253b to access (read or write) value
 			in		l,(c)
 			ld		h,0
-			push		de																; push return address back
-			ret																		; return in HL
+			push		de		; push return address back
+			ret				; return in HL
 
 ; ******************************************************************************
 ; Function: Read a next register
@@ -1938,10 +2016,8 @@ CheckSaveGameExists:
 			cpi
 			jr		nz,@notExist
 			djnz		@loop2
-			ld		a,(de)	; check StillAlive, if == 0 the dead
-			and		a
-			jr		z,@notExist
-			ld		l,1
+			inc		hl
+			ld		l,(hl)	; check StillAlive, if == 0 then dead
 			ret
 @notExist:	; valid save game doesn't exist
 			ld		l,0

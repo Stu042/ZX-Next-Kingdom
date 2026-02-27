@@ -65,9 +65,6 @@ void GameGrainInit(void) {
 	GrainAteStr[0] = 0;
 	GrainPlantedStr[0] = 0;
 	UsedGrainStr[0] = 0;
-	Data.GrainAte = 0;
-	Data.GrainPlanted = 0;
-	Data.UsedGrain = 0;
 	grainErrorStr = NULL;
 	finished = false;
 	ClsL2(0);
@@ -80,7 +77,18 @@ void GameGrainInit(void) {
 
 
 bool GameGrainRun(void) {
-	input();
+	#ifdef AUTOPLAY
+		if (Data.Population *2 >= Data.Grains) {
+			Data.GrainAte = Data.Grains / 2;
+			Data.GrainPlanted = Data.Grains - Data.GrainAte;
+		} else {
+			Data.GrainAte = Data.Population;
+			Data.GrainPlanted =  Data.Grains - Data.GrainAte;
+		}
+		finished = true;
+	#else
+		input();
+	#endif
 	render();
 	return finished;
 }

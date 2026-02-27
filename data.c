@@ -41,3 +41,7 @@ HiScores PlayerHiScores = {
 };
 bool SaveGameExists;
 
+
+bool IsEndGame(void) {
+	return (Data.LandSize <= 0 || Data.Population <= 0 || Data.Grains <= 0);
+}

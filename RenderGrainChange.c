@@ -47,7 +47,7 @@ bool grainDecrease(void) {
 		char banditsStoleTxt[] = "The bandits stole some of our grain.";
 		uint8 banditsStoleTxtLen = PropPixelLength(banditsStoleTxt);
 		PrintProp(LeftSideMargin, GSY_TEXTY(y), StdTextColour, banditsStoleTxt);
-		PrintSimpleValue(LeftSideMargin + banditsStoleTxtLen, GSY_TEXTY(y++), StdTextColour, "Grain stolen ", Data.GrainStolen);
+		PrintSimpleValue(LeftSideMargin + banditsStoleTxtLen, GSY_TEXTY(y++), StdTextColour, " Grain stolen ", Data.GrainStolen);
 	}
 	PrintProp(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "We consumed more grain than we produced.");
 	PrintSimpleValue(LeftSideMargin, GSY_TEXTY(y++), StdTextColour, "Grain decrease ", Data.GrainIncrease * -1);

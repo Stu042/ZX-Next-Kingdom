@@ -39,18 +39,20 @@ static void feBkg(void);
 //  State_FrontEndInit
 //  ***************************************************************************************
 void FE_Init(void) {
-	#ifdef IN_EMU
-		bool saveGameExists = false;
-	#else
-		bool saveGameExists = CheckSaveGameExists();
-	#endif
-	uint8 col = saveGameExists ? MenuStdGameCol : MenuInActiveGameCol;
 	ClsL2(0);
 	FE_Background();
-	PrintProp(90, 48, col, "1. Continue Game");
+	#ifdef SKIP_ESX
+		bool saveGameExists = false;
+	#else
+		if (CheckSaveGameExists()) {
+			PrintProp(90, 48, MenuStdGameCol, "1. Continue Game");
+		}
+	#endif
 	PrintProp(90, 64, MenuStdGameCol, "2. New Game");
 	PrintProp(90, 80, MenuStdGameCol, "3. Hi Scores");
 	PrintVersion();
+	PrintCharSetCol(255);
+	PPrintf(0, 0, 255, "Hi");
 	VBlankSwap();
 }
 
@@ -62,7 +64,7 @@ void FE_Init(void) {
 //  ***************************************************************************************
 StartGameChoice FE_Run(void) {
 	ReadKeyboard();
-	#ifdef IN_EMU
+	#ifdef SKIP_ESX
 		bool saveGameExists = false;
 	#else
 		bool saveGameExists = CheckSaveGameExists();

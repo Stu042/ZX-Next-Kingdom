@@ -137,6 +137,7 @@ void PrintEditValues(EditValue editFields[], uint8 count) {
 	}
 }
 
+
 int EditValueCalcTotal(EditValue editFields[], int8 count) {
 	int32 total = 0;
 	EditValue *ef = editFields;

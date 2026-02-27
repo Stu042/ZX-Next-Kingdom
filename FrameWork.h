@@ -8,9 +8,13 @@
 #include <intrinsic.h>
 #include <stdint.h>
 
-// #define IN_DEBUG (1)
-// #define IN_EMU (1)
+//#define IN_DEBUG (1)
+#define SKIP_ESX (1)
+// #define AUTOPLAY (1)
 
+
+#define DISPLAY_WIDTH (256)
+#define DISPLAY_HEIGHT (192)
 
 #define BREAK		{ intrinsic_emit(0xFD); intrinsic_emit(0x00); }
 #define EXIT		{ intrinsic_emit(0xDD); intrinsic_emit(0x00); }
@@ -39,14 +43,14 @@
 #define SetULAControl(v)			ZXN_NEXTREG_helper(0x68,v)
 
 
-typedef	uint8_t		uint8;
-typedef	int8_t		int8;
-typedef	uint16_t	uint16;
-typedef	int16_t		int16;
-typedef	uint32_t	uint32;
-typedef	int32_t		int32;
-typedef	uint64_t	uint64;
-typedef	int64_t		int64;
+typedef	uint8_t	 uint8;
+typedef	int8_t int8;
+typedef	uint16_t uint16;
+typedef	int16_t int16;
+typedef	uint32_t uint32;
+typedef	int32_t int32;
+typedef	uint64_t uint64;
+typedef	int64_t int64;
 
 #define FRAC (256)
 
@@ -55,16 +59,17 @@ typedef enum eGameStateType {
 	State_None = 0,
 	State_ScoreInit,
 	State_FrontEndRender,		// init the front end
-	State_FrontEndAction,			// Process front end
+	State_FrontEndAction,		// Process front end
 	State_ContinueGame,
 	State_NewGame,
-	State_ShowHiScore,
 	State_NewHiScore,
+	State_ShowHiScore,
 
 	State_QuitFrontEnd,		// quit the front end
 
 	State_InitGame,			// init the game
 
+	State_StartGameLoop,
 	State_PopInit,
 	State_PopRun,
 	State_PopValidate,
@@ -83,11 +88,11 @@ typedef enum eGameStateType {
 
 
 typedef	struct SHWSprite {
-	uint8	X;
-	uint8	Y;
-	uint8	Palette_FlipRotate;
-	uint8	Visible_1_Name;
-	uint8	H_N6_Scale_Y8;
+	uint8 X;
+	uint8 Y;
+	uint8 Palette_FlipRotate;
+	uint8 Visible_1_Name;
+	uint8 H_N6_Scale_Y8;
 } SHWSprite,*PSHWSprite;
 
 

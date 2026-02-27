@@ -36,13 +36,13 @@ static Firework fireworks[FIREWORKS_MAX];
 //  State_ScoreInit
 //  ***************************************************************************************
 void SC_InitScores(void) {
-	#ifdef IN_EMU
+	#ifdef SKIP_ESX
 	#else
 		SetCpu28Mhz();
-		FileError err = LoadData(hiScoreFilename, FOPEN_MODE_OPEN_EXIST | FOPEN_MODE_READ, &PlayerHiScores, sizeof(HiScores));
-		if (FileErrorEsxDosError(err) > ESX_Eok) {
+		EsxDosError err = LoadData(hiScoreFilename, FOPEN_MODE_OPEN_EXIST | FOPEN_MODE_READ, &PlayerHiScores, sizeof(HiScores));
+		if (err > ESX_Eok) {
 			err = SaveData(hiScoreFilename, FOPEN_MODE_OPEN_CREATE | FOPEN_MODE_WRITE, &PlayerHiScores, sizeof(HiScores));
-			// if (FileErrorEsxDosError(err) > ESX_Eok) {
+			// if (err > ESX_Eok) {
 			// }
 		}
 		SetCpu14Mhz();
@@ -56,14 +56,13 @@ void SC_InitScores(void) {
 //  State_ContinueGame
 //  ***************************************************************************************
 bool SC_LoadGame(void) {
-	#ifdef IN_EMU
+	#ifdef SKIP_ESX
 		return false;
 	#else
 		SetCpu28Mhz();
-		FileError err;
-		err = LoadData(SaveGameFilename, FOPEN_MODE_OPEN_EXIST | FOPEN_MODE_READ, &Data, sizeof(GameData));
+		EsxDosError err = LoadData(SaveGameFilename, FOPEN_MODE_OPEN_EXIST | FOPEN_MODE_READ, &Data, sizeof(GameData));
 		SetCpu14Mhz();
-		if (FileErrorEsxDosError(err) <= ESX_Eok) {
+		if (err <= ESX_Eok) {
 			return true;
 		}
 		return false;
@@ -89,12 +88,26 @@ void SC_NewGame(void) {
 	strcpy(Data.GameName, GameName);
 	strcpy(Data.Version, GameVersion);
 	Data.StillAlive = true;
+	Data.Year = 0;
 	Data.Grains = 100;
 	Data.Population = 20;
 	Data.LandSize = 10;
 	Data.DykeStateFrac = Frac * 2;
 	Data.BanditCount = 5;
 	Data.BanditHealthFrac = Frac / 2;
+	Data.TotalPopDied=0;
+	Data.TotalPopKilled=0;
+	Data.TotalPopStarved=0;
+	Data.TotalPopDiedOldAge=0;
+	Data.TotalPopBorn=0;
+	Data.TotalBanditsKilled=0;
+	Data.TotalGrainAte=0;
+	Data.TotalGrainPlanted=0;
+	Data.TotalGrainStolen=0;
+	Data.TotalGrainGrown=0;
+	Data.TotalGrainFlooded=0;
+	Data.TotalLandFlooded=0;
+	Data.TotalLandReclaimed=0;
 	saveGame();
 }
 
@@ -123,11 +136,10 @@ void SC_ShowHiScore(void) {
 // State_NewHiScore
 // ***************************************************************************************
 
-static HiScore *GetHiScore(void);
+static HiScore *getHiScore(void);
 
 bool SC_NewHiScore(void) {
-	Data.Year = 10;
-	HiScore *hiScore = GetHiScore();
+	HiScore *hiScore = getHiScore();
 	if (hiScore == NULL) {
 		return false;
 	}
@@ -163,7 +175,7 @@ bool SC_NewHiScore(void) {
 		PrintPropCentre(128, MenuStdGameCol, hiScore->Name);
 		VBlankSwap();
 	}
-	#ifdef IN_EMU
+	#ifdef SKIP_ESX
 	#else
 		SaveData(hiScoreFilename, FOPEN_MODE_OPEN_CREATE | FOPEN_MODE_WRITE, &PlayerHiScores, sizeof(HiScores));
 	#endif
@@ -172,7 +184,7 @@ bool SC_NewHiScore(void) {
 }
 
 
-static HiScore *GetHiScore(void) {
+static HiScore *getHiScore(void) {
 	HiScore *hiScore = PlayerHiScores.Scores;
 	uint8 i;
 	for(i=0; i < HI_SCORES_COUNT; i++) {
@@ -204,7 +216,7 @@ static HiScore *GetHiScore(void) {
 
 
 static void saveGame(void) {
-	#ifdef IN_EMU
+	#ifdef SKIP_ESX
 	#else
 		SetCpu28Mhz();
 		SaveData(SaveGameFilename, FOPEN_MODE_CREATE_TRUNC | FOPEN_MODE_WRITE, &Data, sizeof(GameData));

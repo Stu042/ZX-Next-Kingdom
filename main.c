@@ -36,7 +36,6 @@ static eGameState GameState;
 //  Handle the main loop and state changes
 // ****************************************************************************************
 void MainLoop(void) {
-	BREAK;
 	while (1) {
 		switch (GameState) {		// Do game states
 			case State_ScoreInit:
@@ -52,21 +51,25 @@ void MainLoop(void) {
 				break;
 
 			case State_FrontEndAction:	// action the menu
-				BankFrontEnd();
-				StartGameChoice menuChoice = FE_Run();	// state set by the menu option selected
-				switch (menuChoice) {
-					case SGC_NewGame:
-						SetState(State_NewGame);
-						break;
-					case SGC_ContinueGame:
-						SetState(State_ContinueGame);
-						break;
-					case SGC_ShowHiScore:
-						SetState(State_ShowHiScore);
-						break;
-					default:
-						break;
-				}
+				#ifdef AUTOPLAY
+					SetState(State_NewGame);
+				#else
+					BankFrontEnd();
+					StartGameChoice menuChoice = FE_Run();	// state set by the menu option selected
+					switch (menuChoice) {
+						case SGC_NewGame:
+							SetState(State_NewGame);
+							break;
+						case SGC_ContinueGame:
+							SetState(State_ContinueGame);
+							break;
+						case SGC_ShowHiScore:
+							SetState(State_ShowHiScore);
+							break;
+						default:
+							break;
+					}
+				#endif
 				break;
 			
 			case State_ShowHiScore:		// show hi score and wait for key press
@@ -103,6 +106,12 @@ void MainLoop(void) {
 			case State_InitGame:
 				BankGamePlay();
 				GP_Init();
+				SetState(State_StartGameLoop);
+				break;
+
+			case State_StartGameLoop:
+				BankGamePlay();
+				GP_ResetData();
 				SetState(State_PopInit);
 				break;
 
@@ -159,43 +168,49 @@ void MainLoop(void) {
 			case State_SimYearRun:
 				BankGamePlay();
 				GameSimYearRun();
-				SetState(State_SimYearRender);
-				break;
-
-			case State_SimYearRender:
-				BankGamePlay();
-				GameSimYearRender();
 				SetState(State_SaveGame);
 				break;
 
 			case State_SaveGame:
 				BankScore();
 				SC_SaveGame();
+				SetState(State_SimYearRender);
+				break;
+
+			case State_SimYearRender:
+				#ifdef AUTOPLAY
+				#else
+					BankGamePlay();
+					GameSimYearRender();
+				#endif
 				SetState(State_IsEndGame);
 				break;
 
 			case State_IsEndGame:
-				BankGamePlay();
-				if (GP_IsEndGame()) {
-					SetState(State_QuitGame);
+				if (Data.StillAlive) {
+					SetState(State_StartGameLoop);
 				} else {
-					SetState(State_PopInit);
+					SetState(State_QuitGame);
 				}
 				break;
 
 			case State_QuitGame:
 				BankGamePlay();
 				GP_Quit();
-				SetState(State_ScoreInit);
+				SetState(State_NewHiScore);
 				break;
 
 			case State_NewHiScore:
-				BankScore();
-				if (SC_NewHiScore()) {
-					SetState(State_ShowHiScore);
-				} else {
+				#ifdef AUTOPLAY
 					SetState(State_ScoreInit);
-				}
+				#else
+					BankScore();
+					if (SC_NewHiScore()) {
+						SetState(State_ShowHiScore);
+					} else {
+						SetState(State_ScoreInit);
+					}
+				#endif
 				break;
 
 			default:
@@ -218,7 +233,7 @@ int main(void) {
 	NextReg(0x4b, 0xe3);	// sprite transparency
 	SetTransparencyColourFallback(0xe3);
 	BankKernel();		// page in kernel
-	#ifdef IN_EMU		// prepare filesystem if NOT using emulator
+	#ifdef SKIP_ESX		// prepare filesystem if NOT using emulator
 	#else
 		EsxGetDrive();
 	#endif

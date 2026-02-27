@@ -14,8 +14,6 @@
 
 #define MIN(a,b) ((a) < (b)? (a) : (b))
 
-#define DISPLAY_WIDTH (256)
-#define DISPLAY_HEIGHT (192)
 
 // bank8k page 2 to mem 0xe000
 #define BankKernel()	ZXN_NEXTREG_helper(0x57,2)
@@ -115,11 +113,6 @@ typedef enum ESX_DOS_ERROR {
 	ESX_Fsunknown = 30,		// Unknown filesystem
 	ESX_Devicebusy = 31		// Device busy
 }EsxDosError;
-
-
-typedef uint16 FileError;
-#define FileErrorEsxDosError(x)	((EsxDosError)((x) & 31))
-#define FileErrorLocation(x)	((FileErrorLocation)((x) >> 8))
 
 
 typedef enum FOPEN_MODE {
@@ -233,6 +226,9 @@ extern void DoubleBlitLargeImage(uint8 imageBank, uint8 bankCount) __z88dk_calle
 extern void PrintProp(uint8 x, uint8 y, uint8 col, char *text) __z88dk_callee;
 extern uint8 PropPixelLength(char *text) __z88dk_fastcall;
 
+extern void PrintCharSetCol(uint8 col) __z88dk_fastcall __preserves_regs(b,c,d,e,h,l,iyl,iyh);
+extern uint8 PrintChar(uint8 x, uint8 y, char text) __z88dk_callee __preserves_regs(iyl,iyh);
+
 extern void XorShiftRndSeed(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
 #define MAX_XOR_SHIFT (65534)
 extern uint16 XorShift(void) __z88dk_fastcall __preserves_regs(iyl,iyh);
@@ -271,8 +267,9 @@ extern EsxDosError FileStats(const char *filename) __z88dk_fastcall __preserves_
 extern EsxDosError SaveData(const char *filename, FOpenMode mode, void *from, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
 extern EsxDosError LoadData(const char *filename, FOpenMode mode, void *to, uint16 length) __z88dk_callee __preserves_regs(iyl,iyh);
 
-extern uint16 CheckSaveGameExists(void);
+extern uint8 CheckSaveGameExists(void);
 
+extern void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...);
 
 
 #endif	//__KERNEL_H__

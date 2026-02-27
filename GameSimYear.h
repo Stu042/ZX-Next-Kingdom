@@ -2,20 +2,21 @@
 #define GameSimYear_H
 #include "FrameWork.h"
 #include "GameStd.h"
+#include "Kernel.h"
 
 
 
 #define GSY_TEXT_TOP (128)
-#ifdef IN_DEBUG
-	uint8 GSY_TEXTY(uint8 offset) {
-		if (((uint8)(GSY_TEXT_TOP + (offset) * 8)) > (DISPLAY_HEIGHT - 8)) {
-			Border(INK_RED);	// warn if we try to print off screen
-		}
-		return ((uint8)(GSY_TEXT_TOP + (offset) * 8));
-	}
-#else
+// #ifdef IN_DEBUG
+// 	uint8 GSY_TEXTY(uint8 offset) {
+// 		if (((uint8)(GSY_TEXT_TOP + (offset) * 8)) > (DISPLAY_HEIGHT - 8)) {
+// 			Border(INK_RED);	// warn if we try to print off screen
+// 		}
+// 		return ((uint8)(GSY_TEXT_TOP + (offset) * 8));
+// 	}
+// #else
 	#define GSY_TEXTY(offset) ((uint8)(GSY_TEXT_TOP + (offset) * 8))
-#endif
+// #endif
 
 
 

@@ -76,23 +76,23 @@ typedef struct GAME_DATA {
 
 	int32 BanditsKilled;
 
-	int32 TotalPopDied;
-	int32 TotalPopKilled;
-	int32 TotalPopStarved;
-	int32 TotalPopDiedOldAge;
+	uint32 TotalPopDied;
+	uint32 TotalPopKilled;
+	uint32 TotalPopStarved;
+	uint32 TotalPopDiedOldAge;
 
-	int32 TotalPopBorn;
+	uint32 TotalPopBorn;
 
-	int32 TotalBanditsKilled;
+	uint32 TotalBanditsKilled;
 
-	int32 TotalGrainAte;
-	int32 TotalGrainPlanted;
-	int32 TotalGrainStolen;
-	int32 TotalGrainGrown;
-	int32 TotalGrainFlooded;
+	uint32 TotalGrainAte;
+	uint32 TotalGrainPlanted;
+	uint32 TotalGrainStolen;
+	uint32 TotalGrainGrown;
+	uint32 TotalGrainFlooded;
 
-	int32 TotalLandFlooded;
-	int32 TotalLandReclaimed;
+	uint32 TotalLandFlooded;
+	uint32 TotalLandReclaimed;
 }GameData;
 
 
@@ -106,6 +106,7 @@ extern HiScores PlayerHiScores;
 extern bool SaveGameExists;
 
 
+extern bool IsEndGame(void);
 
 
 #endif

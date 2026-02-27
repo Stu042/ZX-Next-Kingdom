@@ -64,11 +64,6 @@ static void updatePic(void);
 void GamePopInit(void) {
 	popIndex = 0;
 	oldIndex = -1;
-	Data.UsedGrain = 0;	// set to zero as print resources also prints this value
-	Data.PopInFields = 0;
-	Data.PopOnWall = 0;
-	Data.PopDefending = 0;
-	Data.UsedPop = 0;
 	PopInFieldsStr[0] = 0;
 	PopOnWallStr[0] = 0;
 	PopDefendingStr[0] = 0;
@@ -100,7 +95,18 @@ bool GamePopValidate(void) {
 // Internal functions
 
 static void input(void) {
-	finished = KeyedInput(editFields, &popIndex, POP_FIELDS_COUNT);
+	#ifdef AUTOPLAY
+		if (Data.Population > 3) {
+			Data.PopInFields = Data.Population / 3;
+			Data.PopOnWall = Data.Population / 4;
+			Data.PopDefending = Data.Population / 5;
+		} else {
+			Data.PopInFields = Data.Population;
+		}
+		finished = true;
+	#else
+		finished = KeyedInput(editFields, &popIndex, POP_FIELDS_COUNT);
+	#endif
 	Data.UsedPop = EditValueCalcTotal(editFields, POP_FIELDS_COUNT);
 	ltoa(Data.UsedPop, UsedPopStr, 10);
 }

@@ -16,9 +16,7 @@
 extern void GamePlayTest(void);
 
 extern void GP_Init(void);
-extern void GP_Run(void);
-extern void GP_SaveGame(void);
-extern bool GP_IsEndGame(void);
+extern void GP_ResetData(void);
 extern void GP_Quit(void);
 
 
