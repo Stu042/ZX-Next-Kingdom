@@ -977,7 +977,7 @@ PrintChar:
 			ld		a,(PrintCol)
 			ld		c,a			; C = text pixel colour
 
-@nextRow:	; DE = first char row, B = char width, C = 7, CharPosition & PrintCol filled
+@nextRow:	; DE = first char row, B = 7 rows, C = colour, CharPosition & PrintCol filled
 			push	bc				; B = row count, C = colour
 			ld		bc,(CharPosition)
 			inc		b			; inc Y pos

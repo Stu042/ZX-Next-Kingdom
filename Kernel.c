@@ -252,6 +252,7 @@ int32 clamp(int32 val, int32 min, int32 max) {
 #include <stdlib.h>
 
 
+// Issue, when grabing a 1 byte vararg, grab it as 2 byte and cast.
 void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...) {
 	PrintCharSetCol(col);
 	if (y > 191) {
@@ -270,12 +271,12 @@ void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...) {
 				} else {			// printing a var argument
 					switch(*str) {
 						case 'b': {	// signed integer byte
-							int b = (int)va_arg(args, int8);
+							int b = (int8)va_arg(args, int16);	// makes no sense this needs to be int16 to grab a int8 value
 							itoa(b, Buffer, 10);
 							break;
 						}
 						case 'B': {	// unsigned integer byte
-							unsigned int ub = (unsigned int)va_arg(args, uint8);
+							unsigned int ub = (uint8)va_arg(args, uint16);	// makes no sense this needs to be uint16 to grab a uint8 value
 							itoa(ub, Buffer, 10);
 							break;
 						}
@@ -284,17 +285,17 @@ void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...) {
 							itoa(w, Buffer, 10);
 						}
 						case 'W': {	// unsigned 2 byte integer
-							unsigned int uw = (unsigned int)va_arg(args, uint16);
+							unsigned int uw = va_arg(args, uint16);
 							itoa(uw, Buffer, 10);
 							break;
 						}
 						case 'l': {	// signed 4 byte integer
-							int32 l = (int32)va_arg(args, int32);
+							long l = (int32)va_arg(args, int32);
 							ltoa(l, Buffer, 10);
 							break;
 						}
 						case 'L': {	// unsigned 4 byte integer
-							uint32 ul = (uint32)va_arg(args, uint32);
+							long ul = va_arg(args, uint32);
 							ltoa(ul, Buffer, 10);
 							break;
 						}
@@ -303,22 +304,21 @@ void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...) {
 					if (x + dx < x) {
 						y += 8;
 						x = 0;
-						if (y <= 191) {
-							PrintProp(x, y, col, Buffer);
+						if (y > 191) {
+							break;
 						}
 					}
+					PrintProp(x, y, col, Buffer);
 				}
 				break;
-			case '\\':
+			case '/':
 				str++;
-				if (*str == '\\') {
-					dx = PrintChar(x, y, '\\');
-				} else {
+				if (*str == '/') {
+					dx = PrintChar(x, y, '/');
+				} else if (*str == 'n') {
 					dx = 0;
-					if (*str == 'n') {
-						y += 8;
-						x = 0;
-					}
+					y += 8;
+					x = 0;
 				}
 				break;
 			default:
@@ -328,11 +328,11 @@ void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...) {
 		if (x + dx < x) {
 			y += 8;
 			x = 0;
-			if (y > 191) {
-				break;
-			}
 		} else {
 			x += dx;
+		}
+		if (y > 191) {
+			break;
 		}
 		str++;
 	}

@@ -51,8 +51,6 @@ void FE_Init(void) {
 	PrintProp(90, 64, MenuStdGameCol, "2. New Game");
 	PrintProp(90, 80, MenuStdGameCol, "3. Hi Scores");
 	PrintVersion();
-	PrintCharSetCol(255);
-	PPrintf(0, 0, 255, "Hi");
 	VBlankSwap();
 }
 
