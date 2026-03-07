@@ -1,6 +1,6 @@
 	SECTION TEST_SEG
-        PUBLIC _Test
-_Test:
+        PUBLIC _TestPic, _TestPicSize
+_TestPic:
 
                 db 0, 128
 ; RLE encoded 9520 bytes, vs full count 32768
@@ -303,3 +303,4 @@ _Test:
                 db 5, 248, 145, 212, 248, 248, 248, 248, 212, 248, 212, 212, 248, 212, 212, 248, 248, 248, 212, 212, 5, 248, 146, 212, 248, 248, 248, 248, 212, 248, 212, 212
                 db 248, 248, 212, 212, 248, 212, 248, 212, 212, 127, 0, 127, 0, 130, 0, 0
 
+	defc _TestPicSize = 9522

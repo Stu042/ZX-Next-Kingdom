@@ -220,6 +220,7 @@ void MainLoop(void) {
 	}
 }
 
+#include "pics/Pics.h"
 
 // ************************************************************************************************************************
 //  Main program start
@@ -245,14 +246,12 @@ int main(void) {
 
 	BankIn40(92);
 	BankIn60(93);
-	Border(INK_BLUE);
-	ClsL2(200);
-	BREAK;
-	TestFillPixels();
-	//RleBlit(0, 10, 0x4000);
+	ClsL2(0);
+	//TestFillPixels();
+	//TestCopyPixels();
+	RleBlit(0, (&TestPic + 0x2000), &TestPicSize);
 	SwapL2();
 	HangForKey();
-
 
 	SetState(State_ScoreInit);
 	MainLoop();

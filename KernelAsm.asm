@@ -272,129 +272,47 @@ DMAFillInternal:	LD	HL,DMAFillProg
 
 
 ; ******************************************************************************
-; void RleBlit(uint8 x, uint8 y, uint8 *image)
+; void RleBlit(uint8 y, uint8 *image, uint8 *imageEnd)
 ; ******************************************************************************
 	PUBLIC _RleBlit, RleBlit
-_RleBlit:		; probably okay to delete this now
-			pop	de	; return addr
+_RleBlit:
+			pop	hl	; return addr
+			dec	sp
 			pop	bc	; YX
-			pop	hl	; image
-			push 	de	; return addr
+			ld	c,0
+			pop	de	; image
+			ex	(sp),hl	; image end
+			add	hl,de
+			ex	de,hl
 ; ******************************************************************************
 ; Function: Render a RLE image to the display at x, y.
 ;   Image data starts with Width, Height, then pixel data.
 ;   Image must fit fully on screen.
 ; BC = yx position on screen
 ; HL = ptr to image data
+; DE = ptr to image data end
 ; ******************************************************************************
-			;	if image data & 128 == 0 {
-			;		
-			;		while (pixel count + x) > width {
-			;			cur pixel count = width - x
-			;			get yx screen pos
-			;			call	GetPixelAddress
-			;			A = (image data)
-			;			BC = cur pixel count
-			;			call DMAFill
-			;			pixel count -= cur pixel count
-			;			inc y screen pos
-			;			x = 0
-			;		}
-			;		if pixel count > 0 {
-			;			cur pixel count = pixel count
-			;			get yx screen pos
-			;			call	GetPixelAddress
-			;			A = (image data)
-			;			BC = cur pixel count
-			;			call DMAFill
-			;			pixel count -= cur pixel count
-			;			x screen pos += cur pixel count
-			;		}
-			;	} else {
-			;		while (pixel count + x) > width {
-			;			cur pixel count = width - x
-			;			get yx screen pos
-			;			call	GetPixelAddress
-			;			DE = image data
-			;			BC = cur pixel count
-			;			call DMACopy
-			;			pixel count -= cur pixel count
-			;			image data += cur pixel count
-			;			inc y screen pos
-			;			x = 0
-			;		}
-			;		if pixel count > 0 {
-			;			cur pixel count = pixel count
-			;			get yx screen pos
-			;			call	GetPixelAddress
-			;			DE = image data
-			;			BC = cur pixel count
-			;			call DMACopy
-			;			pixel count -= cur pixel count
-			;			image data += cur pixel count
-			;			x screen pos += cur pixel count
-			;		}
-			;	}
-			;
-
-
-; BC = yx position on screen
-; HL = ptr to image data
 RleBlit:
 			push	ix
 			ld		ix,@tableStart
 			ld		(@screenPos),bc
 			ld		(ix + RleBlit_ScreenStartX),c
-			ld		e,(hl)		; width
+			ld		c,(hl)		; width
 			inc		hl
-			ld		d,(hl)		; height
+			ld		b,(hl)		; height
 			inc		hl
-			ld		(@imageSize),de
+			ld		(@imageSize),bc
 			ld		(@imageDataPtr),hl
-			push	bc
-			pop	hl
-			add		hl,de
-			dec		l
-			dec		h		; last pixel to be rendered
-			ld		(@imageEnd),hl
-@nextPixelGroup:
-			call @doGroup
-			ld		hl,(@imageEnd)
-			ld		de,(@screenPos)
-			and		a
-			sbc		hl,de		; sub end pos from cur pos to see if we are finished
-			jr nz,@nextPixelGroup
-			pop	ix
-			ret
+			ld		(@imageDataEndPtr),de
+			jr @nextPixelGroup
 
-
-
-
-@doGroup:	; do a full pixel group, either copy or fill pixels
-			ld		hl,(@imageDataPtr)
-			ld		a,(hl)				; A = pixel count | fill or copy
-			inc		hl
-			bit		7,a
-			call z,@fillPixels
-			call @copyPixels
-			ret
 
 
 @copyPixels:	; copy A pixels to the display, pixels are stored in (HL)
 			and		0x7f				; delete copy bit from pixel count
 			ld		(@pixelCount),a
+			call @getPixelCount
 @copyPixelsLoop:
-			ld		a,(@imageEndX)
-			sub		(ix + RleBlit_ScreenX)		; A = pixels left in row
-			; is it bigger than pixels in group
-			cp		(ix + RleBlit_PixelCount)	; in row - to render (when more pixels than in row: S-1---NC)
-			jr c,@copyMultLines
-			; else remaining will fit on this line
-@copyInLine:
-			ld		a,(@pixelCount)
-@copyMultLines:
-			ld		(@curPixelCount),a
-
 			ld		bc,(@screenPos)			; get yx screen pos
 			call GetPixelAddress				; HL = screen address
 			ld		de,(@imageDataPtr)		; DE = image data
@@ -402,7 +320,10 @@ RleBlit:
 			ex		de,hl				; DE = dest (screen), HL = src (image data)
 			ld		bc,(@curPixelCount)		; BC = cur pixel count
 			call DMACopy
-			call @nextScreenPos
+			ld		hl,(@screenPos)
+			ld		a,(@curPixelCount)
+			add		hl,a
+			ld		(@screenPos),hl
 			; image data += cur pixel count
 			ld		hl,(@imageDataPtr)		; HL = image data ptr
 			ld		a,(@curPixelCount)
@@ -410,31 +331,34 @@ RleBlit:
 			ld		(@imageDataPtr),hl		; save image data ptr
 			; sub cur pixels from pixels
 			ld		a,(@pixelCount)
-			sub		a,(ix + RleBlit_CurPixelCount)
-			ld		(@pixelCount),a			; pixel count -= cur pixel count
-			jr nz,@copyPixelsLoop
+			sub		(ix + RleBlit_CurPixelCount)
+			jr nz,@copyPixels
 			; finished copying pixels
+			jr @nextPixelGroupCont
+
+
+@nextPixelGroup:
+			ld		hl,(@imageDataPtr)
+			ld		a,(hl)				; A = pixel count | fill or copy
+			inc		hl
+			ld		(@imageDataPtr),hl
+			bit		7,a
+			jr z,@fillPixels
+			jr @copyPixels
+@nextPixelGroupCont:
+			ld		hl,(@imageDataPtr)
+			ld		de,(@imageDataEndPtr)
+			and		a
+			sbc		hl,de
+			jr nz,@nextPixelGroup
+			pop	ix
 			ret
-
-
-
 
 
 @fillPixels:	; fill A pixels to the display, (HL) contains the pixel to copy to display
 			ld		(@pixelCount),a
-			; get width of line still to draw
+			call @getPixelCount
 @fillPixelsLoop:
-			ld		a,(@imageEndX)
-			sub		(ix + RleBlit_ScreenX)		; A = pixels left in row
-			; is pixels left in row bigger than pixels in group?
-			cp		(ix + RleBlit_PixelCount)	; in row - to render (when more pixels than in row: S-1---NC)
-			jp m,@fillMultLines
-			; else remaining will fit on this line
-@fillInLine:
-			ld		a,(@pixelCount)
-@fillMultLines:
-			ld		(@curPixelCount),a
-
 			ld		bc,(@screenPos)			; get yx screen pos
 			call GetPixelAddress				; call	GetPixelAddress
 			ld		de,(@imageDataPtr)		; DE = image data
@@ -444,41 +368,34 @@ RleBlit:
 			call DMAFill
 
 			; pixel count -= cur pixel count
-			call @nextScreenPos
+			ld		hl,(@screenPos)
+			ld		a,(@curPixelCount)
+			add		hl,a
+			ld		(@screenPos),hl
 			ld		a,(@pixelCount)
-			sub		a,(ix + RleBlit_CurPixelCount)
-			ld		(@pixelCount),a			; pixel count -= cur pixel count
-			jr nz,@fillPixelsLoop
+			sub		(ix + RleBlit_CurPixelCount)
+			jr nz,@fillPixels
 			; finished filling pixels so set imageDataPtr to next group
 			ld		de,(@imageDataPtr)		; DE = image data
 			inc		de				; next image data, i.e. pixel group
 			ld		(@imageDataPtr),de
-			ret
+			jr @nextPixelGroupCont
 
-@nextScreenPos:
+
+
+@getPixelCount:
 			ld		a,(@screenX)
-			add		(ix + RleBlit_CurPixelCount)	; x coord
-			cp		(ix + RleBlit_ImageEndX)	; is x coord < image end x?
-			jp m,@sameLine
-@newLine:
-			inc		(ix + RleBlit_ScreenY)
-			ld		a,(@screenStartX)
-@sameLine:
-			ld		(@screenX), a
+			add		(ix + RleBlit_PixelCount)
+			jr c,@cantDoFullPixelCount
+			ld		a,(@pixelCount)
+			ld		(@curPixelCount),a
+			ret
+@cantDoFullPixelCount:
+			ld		a,0
+			sub		(ix + RleBlit_ScreenX)
+			ld		(@curPixelCount),a
 			ret
 
-
-	defc RleBlit_Width = @width - @tableStart
-	defc RleBlit_Height = @height - @tableStart
-	defc RleBlit_CurWidth = @curWidth - @tableStart
-	defc RleBlit_ImageEndX = @imageEndX - @tableStart
-	defc RleBlit_ImageEndY = @imageEndY - @tableStart
-	defc RleBlit_ImageDataPtr = @imageDataPtr - @tableStart
-	defc RleBlit_ScreenStartX = @screenStartX - @tableStart
-	defc RleBlit_ScreenX = @screenX - @tableStart
-	defc RleBlit_ScreenY = @screenY - @tableStart
-	defc RleBlit_CurPixelCount = @curPixelCount - @tableStart
-	defc RleBlit_PixelCount = @pixelCount - @tableStart
 
 @tableStart:
 ; full image size
@@ -494,7 +411,7 @@ RleBlit:
 
 ; current image data address
 @imageDataPtr:	db 0,0
-
+@imageDataEndPtr:	db 0,0
 ; Far left of screen position
 @screenStartX:	db 0
 
@@ -509,6 +426,19 @@ RleBlit:
 ; total pixel count we are rendering for current pixel group
 @pixelCount:	db 0,0
 
+	defc RleBlit_Width = @width - @tableStart
+	defc RleBlit_Height = @height - @tableStart
+	defc RleBlit_CurWidth = @curWidth - @tableStart
+	defc RleBlit_ImageEndX = @imageEndX - @tableStart
+	defc RleBlit_ImageEndY = @imageEndY - @tableStart
+	defc RleBlit_ImageDataPtr = @imageDataPtr - @tableStart
+	defc RleBlit_ScreenStartX = @screenStartX - @tableStart
+	defc RleBlit_ScreenX = @screenX - @tableStart
+	defc RleBlit_ScreenY = @screenY - @tableStart
+	defc RleBlit_CurPixelCount = @curPixelCount - @tableStart
+	defc RleBlit_PixelCount = @pixelCount - @tableStart
+
+
 
 testFillData:	db 1, 2, 3, 4, 5
 
@@ -516,8 +446,6 @@ testFillData:	db 1, 2, 3, 4, 5
 _TestFillPixels:
 			push	ix
 			ld	ix,RleBlit@tableStart
-			ld	(ix + RleBlit_ImageEndX), 200
-			ld	(ix + RleBlit_CurWidth), 0
 			ld	(ix + RleBlit_ScreenX), 0
 			ld	(ix + RleBlit_ScreenStartX), 0
 			ld	(ix + RleBlit_ScreenY), 40
@@ -536,20 +464,18 @@ _TestFillPixels:
 
 
 
-testCopyData:	db 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+testCopyData:	db 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 
 	PUBLIC _TestCopyPixels	; appears working on multi and single line
 _TestCopyPixels:
 			push	ix
 			ld	ix,RleBlit@tableStart
-			ld	(ix + RleBlit_ScreenX), 20
-			ld	(ix + RleBlit_ScreenStartX), 20
+			ld	(ix + RleBlit_ScreenX), 0
+			ld	(ix + RleBlit_ScreenStartX), 0
 			ld	(ix + RleBlit_ScreenY), 40
-			ld	(ix + RleBlit_ImageEndX), 40
-			ld	(ix + RleBlit_ImageEndY), 60
 			ld 	hl, testCopyData
 			ld	(RleBlit@imageDataPtr),hl
-			ld	a,30 + 128				; pixel count
+			ld	a,100 + 128				; pixel count
 			call RleBlit@copyPixels
 			pop	ix
 			ret

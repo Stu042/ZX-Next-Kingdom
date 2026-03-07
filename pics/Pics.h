@@ -1,4 +1,4 @@
-
+#include "../FrameWork.h"
 
 #define LargeImageSize (4)
 #define ScrollImageSize (2)
@@ -21,3 +21,5 @@
 #define BanditDeathsPic (88)
 #define TestPicBank (92)
 
+extern uint8* TestPic;
+extern uint8* TestPicSize;

@@ -276,7 +276,7 @@ extern uint8 CheckSaveGameExists(void);
 extern void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...);
 
 
-extern void RleBlit(uint8 x, uint8 y, uint8 *image) __z88dk_callee __preserves_regs(iyl,iyh);
+extern void RleBlit(uint8 y, uint8 *image, uint8 *imageEnd) __z88dk_callee __preserves_regs(iyl,iyh);
 
 extern void TestFillPixels(void) __z88dk_fastcall;
 extern void TestCopyPixels(void) __z88dk_fastcall;
