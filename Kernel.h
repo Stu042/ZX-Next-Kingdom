@@ -148,7 +148,11 @@ typedef struct FILE_STATS_BUFFER {
 extern char Buffer[BUFFER_SIZE];
 
 extern char MadeBy[];
-extern char Version[8];
+//extern char Version[8];
+
+extern char GameName[8];
+extern char GameVersion[8];
+extern char *SaveGameFilename;
 
 
 // Buffer used by assembly functions fstat and stat
@@ -271,5 +275,10 @@ extern uint8 CheckSaveGameExists(void);
 
 extern void PPrintf(uint8 x, uint8 y, uint8 col, const char *mess, ...);
 
+
+extern void RleBlit(uint8 x, uint8 y, uint8 *image) __z88dk_callee __preserves_regs(iyl,iyh);
+
+extern void TestFillPixels(void) __z88dk_fastcall;
+extern void TestCopyPixels(void) __z88dk_fastcall;
 
 #endif	//__KERNEL_H__

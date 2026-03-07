@@ -96,14 +96,14 @@ typedef struct GAME_DATA {
 }GameData;
 
 
-extern const char* GameName;
-extern const char* GameVersion;
-extern const char SaveGameFilename[];
+// extern const char* GameName;
+// extern const char* GameVersion;
+// extern const char SaveGameFilename[];
 
 extern GameData Data;
 extern HiScores PlayerHiScores;
 
-extern bool SaveGameExists;
+//extern bool SaveGameExists;
 
 
 extern bool IsEndGame(void);

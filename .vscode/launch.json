@@ -13,9 +13,9 @@
                 },
 		"z88dk": [
 			{
-				"path": "*.lis",
-				"mapFile": "kingdom.map",
-				"mainFile": "main.c"
+				"path": "${workspaceFolder}/**.lis",
+				"mapFile": "${workspaceFolder}/Kingdom/kingdom.map",
+				"mainFile": "${workspaceFolder}/main.c"
 			}
 		],
 		"commandsAfterLaunch": [],
@@ -26,7 +26,7 @@
 		},
 		"startAutomatically": true,
 		"rootFolder": "${workspaceFolder}",
-		"load": "kingdom.nex",
+		"load": "Kingdom/kingdom.nex",
 	        "preLaunchTask": "Build",
 		//"topOfStack": "__register_sp"
 	},
@@ -38,16 +38,16 @@
       "rootFolder": "${workspaceFolder}",
       "z88dkv2": [
         {
-          "path": "${workspaceFolder}/*.lis",
+          "path": "${workspaceFolder}/**.lis",
           "srcDirs": [],
-          "mapFile": "${workspaceFolder}/kingdom.map",
+          "mapFile": "${workspaceFolder}/Kingdom/kingdom.map",
           "excludeFiles": []
         }
       ],
       "disassemblerArgs": {
         "esxdosRst": true
       },
-      "load": "${workspaceFolder}/kingdom.nex",
+      "load": "${workspaceFolder}/Kingdom/kingdom.nex",
       "startAutomatically": true,
       "history": {
         "reverseDebugInstructionCount": 10000,

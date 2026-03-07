@@ -242,6 +242,18 @@ int main(void) {
 	XorShiftRndSeed32();
 	InitL2();
 	Border(INK_BLACK);
+
+	BankIn40(92);
+	BankIn60(93);
+	Border(INK_BLUE);
+	ClsL2(200);
+	BREAK;
+	TestFillPixels();
+	//RleBlit(0, 10, 0x4000);
+	SwapL2();
+	HangForKey();
+
+
 	SetState(State_ScoreInit);
 	MainLoop();
 	return 0;

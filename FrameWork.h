@@ -8,8 +8,8 @@
 #include <intrinsic.h>
 #include <stdint.h>
 
-//#define IN_DEBUG (1)
-// #define SKIP_ESX (1)
+// #define IN_DEBUG (1)
+#define SKIP_ESX (1)
 // #define AUTOPLAY (1)
 
 

@@ -16,11 +16,11 @@ OBJS =	obj/main.o obj/data.o obj/data_asm.o obj/Kernel.o obj/KernelAsm.o obj/IRQ
 	obj/PlateOfFood.o obj/PlantSeed.o obj/Dyke.o obj/Fields.o obj/Defense.o \
 	obj/NewBorn.o obj/GrainBundle.o obj/KingdomState.o obj/Starved.o \
 	obj/Scroll.o obj/Flood.o obj/Reclaimed.o obj/Population.o obj/LandPic.o \
-	obj/NaturalDeathPic.o obj/BanditDeathsPic.o
+	obj/NaturalDeathPic.o obj/BanditDeathsPic.o obj/Test.o
 
 
-kingdom.nex: $(OBJS) 
-	$(CC) +zxn -vn -m --list --lstcwd --c-code-in-asm -clib=sdcc_iy -Cz"--clean" -pragma-include:zpragma.inc -startup=1 $(OBJS) -o kingdom.nex -create-app -subtype=nex
+Kingdom/kingdom.nex: $(OBJS) 
+	$(CC) +zxn -vn -m --list --lstcwd --c-code-in-asm -clib=sdcc_iy -Cz"--clean" -pragma-include:zpragma.inc -startup=1 $(OBJS) -o Kingdom/kingdom.nex -create-app -subtype=nex
 
 
 # Main program at $8000
@@ -151,6 +151,8 @@ obj/NaturalDeathPic.o: pics/NaturalDeathPic.asm
 obj/BanditDeathsPic.o: pics/BanditDeathsPic.asm
 	$(CC) $(CFLAGS) --codesegPAGE_88_BANDITDEATH_SEG --constsegPAGE_88_BANDITDEATH_SEG -o obj/BanditDeathsPic.o pics/BanditDeathsPic.asm
 
+obj/Test.o: pics/Test.asm
+	$(CC) $(CFLAGS) --codesegPAGE_92_TEST_SEG --constsegPAGE_92_TEST_SEG -o obj/Test.o pics/Test.asm
 
 
 clean:
@@ -161,5 +163,6 @@ clean:
 	rm -f *.nex
 	rm -f *.map
 	rm -f pics/*.lis
+	rm -f Kingdom/*
 
 

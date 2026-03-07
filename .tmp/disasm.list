@@ -1,9 +1,25 @@
+8183.4 F3           DI
+8184.4 FD E5        PUSH IY
+8186.4 D9           EXX
+8187.4 E5           PUSH HL
+8188.4 ED 73 4F A6  LD (0A64Fh),SP
+818C.4 31 FF BF     LD SP,0BFFFh
+818F.4 21 B0 97     LD HL,97B0h.4
 8192.4 34           INC (HL)
 8193.4 34           INC (HL)
+8194.4 CD EF 95     CALL _main
 
+8197.4 E5           PUSH HL
+8198.4 C1           POP BC
+8199.4 ED 7B 4F A6  LD SP,(0A64Fh)
+819D.4 D9           EXX
+819E.4 E1           POP HL
+819F.4 D9           EXX
+81A0.4 FD E1        POP IY
 81A2.4 ED 56        IM 1
 81A4.4 FB           EI
 81A5.4 C9           RET
 
+A64F.5 FB BF FF...  DEFB FB BF FF FF FF FF FF FF ; ASCII: ????????
 BFFF.5 __register_sp:
-BFFF.5 FF           DEFB FF ; ASCII: ?
+BFFF.5 FF 00 00...  DEFB FF 00 00 00 00 00 00 00 ; ASCII: ????????

@@ -20,10 +20,6 @@
 //	Global Variables here
 //-------------------------------------
 
-const char *GameName = "Kingdom";
-const char *GameVersion = "0.01.01";
-const char SaveGameFilename[] = "savegame.king";
-
 GameData Data;
 HiScores PlayerHiScores = {
 	.Scores = {
@@ -39,7 +35,6 @@ HiScores PlayerHiScores = {
 		{ .Name = "LIONHEART", .Years = 10 },
 	}
 };
-bool SaveGameExists;
 
 
 bool IsEndGame(void) {

@@ -267,6 +267,295 @@ DMAFillInternal:	LD	HL,DMAFillProg
     			LD	BC,DMAFillProgL * 256 + Z80DMAPORT 
     			OTIR
 			RET
+
+
+
+
+; ******************************************************************************
+; void RleBlit(uint8 x, uint8 y, uint8 *image)
+; ******************************************************************************
+	PUBLIC _RleBlit, RleBlit
+_RleBlit:		; probably okay to delete this now
+			pop	de	; return addr
+			pop	bc	; YX
+			pop	hl	; image
+			push 	de	; return addr
+; ******************************************************************************
+; Function: Render a RLE image to the display at x, y.
+;   Image data starts with Width, Height, then pixel data.
+;   Image must fit fully on screen.
+; BC = yx position on screen
+; HL = ptr to image data
+; ******************************************************************************
+			;	if image data & 128 == 0 {
+			;		
+			;		while (pixel count + x) > width {
+			;			cur pixel count = width - x
+			;			get yx screen pos
+			;			call	GetPixelAddress
+			;			A = (image data)
+			;			BC = cur pixel count
+			;			call DMAFill
+			;			pixel count -= cur pixel count
+			;			inc y screen pos
+			;			x = 0
+			;		}
+			;		if pixel count > 0 {
+			;			cur pixel count = pixel count
+			;			get yx screen pos
+			;			call	GetPixelAddress
+			;			A = (image data)
+			;			BC = cur pixel count
+			;			call DMAFill
+			;			pixel count -= cur pixel count
+			;			x screen pos += cur pixel count
+			;		}
+			;	} else {
+			;		while (pixel count + x) > width {
+			;			cur pixel count = width - x
+			;			get yx screen pos
+			;			call	GetPixelAddress
+			;			DE = image data
+			;			BC = cur pixel count
+			;			call DMACopy
+			;			pixel count -= cur pixel count
+			;			image data += cur pixel count
+			;			inc y screen pos
+			;			x = 0
+			;		}
+			;		if pixel count > 0 {
+			;			cur pixel count = pixel count
+			;			get yx screen pos
+			;			call	GetPixelAddress
+			;			DE = image data
+			;			BC = cur pixel count
+			;			call DMACopy
+			;			pixel count -= cur pixel count
+			;			image data += cur pixel count
+			;			x screen pos += cur pixel count
+			;		}
+			;	}
+			;
+
+
+; BC = yx position on screen
+; HL = ptr to image data
+RleBlit:
+			push	ix
+			ld		ix,@tableStart
+			ld		(@screenPos),bc
+			ld		(ix + RleBlit_ScreenStartX),c
+			ld		e,(hl)		; width
+			inc		hl
+			ld		d,(hl)		; height
+			inc		hl
+			ld		(@imageSize),de
+			ld		(@imageDataPtr),hl
+			push	bc
+			pop	hl
+			add		hl,de
+			dec		l
+			dec		h		; last pixel to be rendered
+			ld		(@imageEnd),hl
+@nextPixelGroup:
+			call @doGroup
+			ld		hl,(@imageEnd)
+			ld		de,(@screenPos)
+			and		a
+			sbc		hl,de		; sub end pos from cur pos to see if we are finished
+			jr nz,@nextPixelGroup
+			pop	ix
+			ret
+
+
+
+
+@doGroup:	; do a full pixel group, either copy or fill pixels
+			ld		hl,(@imageDataPtr)
+			ld		a,(hl)				; A = pixel count | fill or copy
+			inc		hl
+			bit		7,a
+			call z,@fillPixels
+			call @copyPixels
+			ret
+
+
+@copyPixels:	; copy A pixels to the display, pixels are stored in (HL)
+			and		0x7f				; delete copy bit from pixel count
+			ld		(@pixelCount),a
+@copyPixelsLoop:
+			ld		a,(@imageEndX)
+			sub		(ix + RleBlit_ScreenX)		; A = pixels left in row
+			; is it bigger than pixels in group
+			cp		(ix + RleBlit_PixelCount)	; in row - to render (when more pixels than in row: S-1---NC)
+			jr c,@copyMultLines
+			; else remaining will fit on this line
+@copyInLine:
+			ld		a,(@pixelCount)
+@copyMultLines:
+			ld		(@curPixelCount),a
+
+			ld		bc,(@screenPos)			; get yx screen pos
+			call GetPixelAddress				; HL = screen address
+			ld		de,(@imageDataPtr)		; DE = image data
+
+			ex		de,hl				; DE = dest (screen), HL = src (image data)
+			ld		bc,(@curPixelCount)		; BC = cur pixel count
+			call DMACopy
+			call @nextScreenPos
+			; image data += cur pixel count
+			ld		hl,(@imageDataPtr)		; HL = image data ptr
+			ld		a,(@curPixelCount)
+			add		hl,a
+			ld		(@imageDataPtr),hl		; save image data ptr
+			; sub cur pixels from pixels
+			ld		a,(@pixelCount)
+			sub		a,(ix + RleBlit_CurPixelCount)
+			ld		(@pixelCount),a			; pixel count -= cur pixel count
+			jr nz,@copyPixelsLoop
+			; finished copying pixels
+			ret
+
+
+
+
+
+@fillPixels:	; fill A pixels to the display, (HL) contains the pixel to copy to display
+			ld		(@pixelCount),a
+			; get width of line still to draw
+@fillPixelsLoop:
+			ld		a,(@imageEndX)
+			sub		(ix + RleBlit_ScreenX)		; A = pixels left in row
+			; is pixels left in row bigger than pixels in group?
+			cp		(ix + RleBlit_PixelCount)	; in row - to render (when more pixels than in row: S-1---NC)
+			jp m,@fillMultLines
+			; else remaining will fit on this line
+@fillInLine:
+			ld		a,(@pixelCount)
+@fillMultLines:
+			ld		(@curPixelCount),a
+
+			ld		bc,(@screenPos)			; get yx screen pos
+			call GetPixelAddress				; call	GetPixelAddress
+			ld		de,(@imageDataPtr)		; DE = image data
+
+			ld		a,(de)				; A = (image data)
+			ld		bc,(@curPixelCount)		; BC = cur pixel count
+			call DMAFill
+
+			; pixel count -= cur pixel count
+			call @nextScreenPos
+			ld		a,(@pixelCount)
+			sub		a,(ix + RleBlit_CurPixelCount)
+			ld		(@pixelCount),a			; pixel count -= cur pixel count
+			jr nz,@fillPixelsLoop
+			; finished filling pixels so set imageDataPtr to next group
+			ld		de,(@imageDataPtr)		; DE = image data
+			inc		de				; next image data, i.e. pixel group
+			ld		(@imageDataPtr),de
+			ret
+
+@nextScreenPos:
+			ld		a,(@screenX)
+			add		(ix + RleBlit_CurPixelCount)	; x coord
+			cp		(ix + RleBlit_ImageEndX)	; is x coord < image end x?
+			jp m,@sameLine
+@newLine:
+			inc		(ix + RleBlit_ScreenY)
+			ld		a,(@screenStartX)
+@sameLine:
+			ld		(@screenX), a
+			ret
+
+
+	defc RleBlit_Width = @width - @tableStart
+	defc RleBlit_Height = @height - @tableStart
+	defc RleBlit_CurWidth = @curWidth - @tableStart
+	defc RleBlit_ImageEndX = @imageEndX - @tableStart
+	defc RleBlit_ImageEndY = @imageEndY - @tableStart
+	defc RleBlit_ImageDataPtr = @imageDataPtr - @tableStart
+	defc RleBlit_ScreenStartX = @screenStartX - @tableStart
+	defc RleBlit_ScreenX = @screenX - @tableStart
+	defc RleBlit_ScreenY = @screenY - @tableStart
+	defc RleBlit_CurPixelCount = @curPixelCount - @tableStart
+	defc RleBlit_PixelCount = @pixelCount - @tableStart
+
+@tableStart:
+; full image size
+@imageSize:
+@width:		db 0
+@height:	db 0
+@curWidth:	db 0
+
+; screen position of last point to render
+@imageEnd:
+@imageEndX:	db 0
+@imageEndY:	db 0
+
+; current image data address
+@imageDataPtr:	db 0,0
+
+; Far left of screen position
+@screenStartX:	db 0
+
+; current screen position
+@screenPos:
+@screenX:	db 0
+@screenY:	db 0
+
+; current pixel count we are rendering (can be part of all of pixelCount)
+@curPixelCount:	db 0,0
+
+; total pixel count we are rendering for current pixel group
+@pixelCount:	db 0,0
+
+
+testFillData:	db 1, 2, 3, 4, 5
+
+	PUBLIC _TestFillPixels	; appears working on multi and single line
+_TestFillPixels:
+			push	ix
+			ld	ix,RleBlit@tableStart
+			ld	(ix + RleBlit_ImageEndX), 200
+			ld	(ix + RleBlit_CurWidth), 0
+			ld	(ix + RleBlit_ScreenX), 0
+			ld	(ix + RleBlit_ScreenStartX), 0
+			ld	(ix + RleBlit_ScreenY), 40
+			ld 	hl, testFillData
+			ld	(RleBlit@imageDataPtr),hl
+			ld	a,127				; pixel count
+			call RleBlit@fillPixels
+			ld	a,127				; pixel count
+			call RleBlit@fillPixels
+			ld	a,127				; pixel count
+			call RleBlit@fillPixels
+			ld	a,127				; pixel count
+			call RleBlit@fillPixels
+			pop	ix
+			ret
+
+
+
+testCopyData:	db 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+
+	PUBLIC _TestCopyPixels	; appears working on multi and single line
+_TestCopyPixels:
+			push	ix
+			ld	ix,RleBlit@tableStart
+			ld	(ix + RleBlit_ScreenX), 20
+			ld	(ix + RleBlit_ScreenStartX), 20
+			ld	(ix + RleBlit_ScreenY), 40
+			ld	(ix + RleBlit_ImageEndX), 40
+			ld	(ix + RleBlit_ImageEndY), 60
+			ld 	hl, testCopyData
+			ld	(RleBlit@imageDataPtr),hl
+			ld	a,30 + 128				; pixel count
+			call RleBlit@copyPixels
+			pop	ix
+			ret
+
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; void BlitLargeImageAt(uint8 screenY, uint8 imageBank, uint8 bankCount)
 ; Render an image that spans across multiple banks, screenY must be on the start of a bank boundary.
@@ -840,83 +1129,83 @@ PropPixelLength:
 ; ******************************************************************************
 ; void PrintProp(uint8 x, uint8 y, uint8 col, char *text)
 ; ******************************************************************************
-			defc	CHAR_SPACE_WIDTH = 3
-	PUBLIC _PrintProp, PrintProp
-_PrintProp:
-			pop	de	; return addr
-			pop	bc	; YX
-			dec	sp
-			pop	af	; col
-			pop	hl	; text
-			push 	de	; return addr
+; 			defc	CHAR_SPACE_WIDTH = 3
+; 	PUBLIC _PrintProp, PrintProp
+; _tPrintProp:		; probably okay to delete this now
+; 			pop	de	; return addr
+; 			pop	bc	; YX
+; 			dec	sp
+; 			pop	af	; col
+; 			pop	hl	; text
+; 			push 	de	; return addr
 ; ******************************************************************************
 ; Function: Print a null terminated string using a proportional sized font.
 ; A = colour
 ; BC = yx position on screen
 ; HL = ptr to string, null terminated
 ; ******************************************************************************
-PrintProp:
-			ld		(PrintCol),a
-@NextChar:
-			ld		a,b
-			cmp		191
-			ret		nc
-			ld		(CharPosition),bc
-			ld		a,(hl)			; A = ascii character
-			and		a
-			ret		z			; Main function exit, ret if null
-			inc		hl
-			push	hl				; save next char ptr
-			sub		a,' '
-			jr		nc,@Printable
-			jr		nz,@Printable
-			ld		a,CHAR_SPACE_WIDTH	; space is 4 pix wide
-			add		a,c
-			ld		c,a
-			pop	hl
-			jr		@NextChar
-@Printable:
-			ld		e,a			; E = char
-			ld		d,0			; mult char by 8 to get index into char data
-			sla		e
-			sla		e
-			rl		d
-			sla		e
-			rl		d
-			add		de,PropFontCharData	; DE = char width then char row data
-			ld		a,(de)			; A = char width
-			add		a,c			; calc next x pos
-			ld		c,a
-			push	bc				; save next yx position
-			ld		a,(de)			; A = char width
-			ld		b,a			; B = char width
-			inc		de			; DE = first char row
-			ld		c,7			; C = 7 rows in total
-@nextRow:
-			push	bc				; C = row count B = char width
-			ld		bc,(CharPosition)
-			inc		b
-			ld		(CharPosition),bc
-			call		GetPixelAddress		; HL = screen address
-			pop	bc				; C = row count B = char width
-			push	bc
-			ld		a,(PrintCol)
-			ld		c,a			; text pixel colour
-			ld		a,(de)			; first row to print
-@row:
-			sla		a
-			jr		nc, @nothingToPrint
-			ld		(hl),c			; draw colour if a pixel reqd
-@nothingToPrint:
-			inc		l
-			djnz		@row			; complete row
-			inc		de			; next char data row
-			pop		bc			; B = row count C = char width
-			dec		c
-			jr		nz,@nextRow
-			pop	bc				; next yx position
-			pop	hl				; next char ptr
-			jr		@NextChar
+; tPrintProp:		; probably okay to delete this now
+; 			ld		(PrintCol),a
+; @NextChar:
+; 			ld		a,b
+; 			cmp		191
+; 			ret		nc
+; 			ld		(CharPosition),bc
+; 			ld		a,(hl)			; A = ascii character
+; 			and		a
+; 			ret		z			; Main function exit, ret if null
+; 			inc		hl
+; 			push	hl				; save next char ptr
+; 			sub		a,' '
+; 			jr		nc,@Printable
+; 			jr		nz,@Printable
+; 			ld		a,CHAR_SPACE_WIDTH	; space is 4 pix wide
+; 			add		a,c
+; 			ld		c,a
+; 			pop	hl
+; 			jr		@NextChar
+; @Printable:
+; 			ld		e,a			; E = char
+; 			ld		d,0			; mult char by 8 to get index into char data
+; 			sla		e
+; 			sla		e
+; 			rl		d
+; 			sla		e
+; 			rl		d
+; 			add		de,PropFontCharData	; DE = char width then char row data
+; 			ld		a,(de)			; A = char width
+; 			add		a,c			; calc next x pos
+; 			ld		c,a
+; 			push	bc				; save next yx position
+; 			ld		a,(de)			; A = char width
+; 			ld		b,a			; B = char width
+; 			inc		de			; DE = first char row
+; 			ld		c,7			; C = 7 rows in total
+; @nextRow:
+; 			push	bc				; C = row count B = char width
+; 			ld		bc,(CharPosition)
+; 			inc		b
+; 			ld		(CharPosition),bc
+; 			call		GetPixelAddress		; HL = screen address
+; 			pop	bc				; C = row count B = char width
+; 			push	bc
+; 			ld		a,(PrintCol)
+; 			ld		c,a			; text pixel colour
+; 			ld		a,(de)			; first row to print
+; @row:
+; 			sla		a
+; 			jr		nc, @nothingToPrint
+; 			ld		(hl),c			; draw colour if a pixel reqd
+; @nothingToPrint:
+; 			inc		l
+; 			djnz		@row			; complete row
+; 			inc		de			; next char data row
+; 			pop		bc			; B = row count C = char width
+; 			dec		c
+; 			jr		nz,@nextRow
+; 			pop	bc				; next yx position
+; 			pop	hl				; next char ptr
+; 			jr		@NextChar
 
 
 ; ******************************************************************************
@@ -934,7 +1223,50 @@ PrintCharSetCol:
 			ret
 
 
-		
+
+
+; ******************************************************************************
+; void Print(uint8 x, uint8 y, uint8 col, char *text)
+; ******************************************************************************
+	defc	CHAR_SPACE_WIDTH = 3
+	PUBLIC _PrintProp, PrintProp
+_PrintProp:
+			pop	de	; return addr
+			pop	bc	; YX
+			dec	sp
+			pop	af	; col
+			pop	hl	; text
+			push 	de	; return addr
+; ******************************************************************************
+; Function: Print a null terminated string using a proportional sized font.
+; A = colour
+; BC = yx position on screen
+; HL = ptr to string, null terminated
+; ******************************************************************************
+PrintProp:
+			ld		(PrintCol),a
+@nextChar:
+			ld		a,b
+			cmp		191
+			ret		nc			; off bottom of display
+
+			ld		a,(hl)
+			and		a
+			ret		z			; Main function exit, ret if null
+
+			push	hl
+			push	bc
+			call	PrintChar
+			pop	bc
+			ld		a,c
+			add		a,l
+			ld		c,a
+			pop	hl
+			inc		hl
+			jr	@nextChar
+
+
+
 ; ******************************************************************************
 ; uint8 PrintChar(uint8 x, uint8 y, char text)
 ; ******************************************************************************
@@ -1975,8 +2307,12 @@ BankRom:
 ;   bool CheckSaveGameExists() __z88dk_fastcall __preserves_regs(iyl,iyh);
 ;
 ; *******************************************************************************************************
-GameName:		db "Kingdom"
-GameVersion:		db "0.01.01"
+	PUBLIC _GameName, GameName, _GameVersion, GameVersion, _SaveGameFilename, SaveGameFilename
+_GameName:
+GameName:		db "Kingdom", 0
+_GameVersion:
+GameVersion:		db "0.01.10", 0
+_SaveGameFilename:
 SaveGameFilename:	db "savegame.king", 0
 
 _CheckSaveGameExists:

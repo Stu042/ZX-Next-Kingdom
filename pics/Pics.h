@@ -19,5 +19,5 @@
 #define LandPic (80)
 #define NaturalDeathPic (84)
 #define BanditDeathsPic (88)
-
+#define TestPicBank (92)
 
